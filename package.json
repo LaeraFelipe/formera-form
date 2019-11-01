@@ -1,0 +1,18 @@
+{
+  "name": "formera",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "nodemon dist/test.js"
+  },
+  "author": "Felipe Laera",
+  "license": "ISC",
+  "dependencies": {
+    "lodash": "^4.17.15"
+  },
+  "devDependencies": {
+    "@types/lodash": "^4.14.144",
+    "nodemon": "^1.19.4"
+  }
+}
