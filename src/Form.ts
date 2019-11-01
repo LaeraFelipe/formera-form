@@ -61,16 +61,48 @@ export default class Form {
     }
   }
 
+  /**Do the focus actions in a field state. */
   public focus(field: string): void {
+    let currentField = this.fieldStates[field];
 
+    currentField.active = true;
+
+    this.log(`Focus on field: ( ${field} ).`, currentField);
+    this.notifySubscribers(field);
   }
 
+  /**Do the change actions in a field state. */
   public change(field: string, value: any): void {
+    let currentField = this.fieldStates[field];
 
+    currentField.previousValue = currentField.value;
+    currentField.value = value;
+
+    set(this.state.previousValues, field, currentField.previousValue);
+    set(this.state.values, field, currentField.value);
+
+    currentField.pristine = currentField.initialValue === currentField.value;
+
+    this.state.pristine = !currentField.pristine ? currentField.pristine : this.isFormPristine();
+
+    this.log(`Change on field: ( ${field} ).`, currentField);
+
+    this.notifySubscribers(field);
   }
 
+  /**Do the blur actions in a field state. */
   public blur(field: string): void {
+    let currentField = this.fieldStates[field];
 
+    currentField.active = false;
+    currentField.touched = true;
+
+    currentField.dirty = !currentField.pristine;
+
+    this.state.touched = true;
+
+    this.log(`Blur on field: ( ${field} ).`, currentField);
+    this.notifySubscribers(field);
   }
 
   private notifySubscribers(name: string) {
@@ -87,6 +119,19 @@ export default class Form {
         // subcription(fieldState, formValues);
       }
     }
+  }
+
+  /**Return form state. */
+  getState() {
+    return this.state;
+  }
+
+  /**Calculate if the form is pristine. */
+  private isFormPristine() {
+    for (const key in this.fieldStates) {
+      if (!this.fieldStates[key].pristine) return false;
+    }
+    return true;
   }
 
   /**Verify if a field is registered. */
