@@ -1,7 +1,7 @@
-import { FormState, FieldEntries, FormOptions, FieldHandler, FieldStates } from "./types";
-import { cloneDeep, set, get } from 'lodash';
-import { initialFormState, initialFieldState } from "./initialValues";
-import { getFieldValueFromSource } from "./utils";
+import { FormState, FormOptions, FieldHandler, FieldStates, FieldSubscriptionOptions, FormSubscriptionCallback, FieldSubscriptions, FormSubscriptions, FieldSubscriptionCallback, FormSubscriptionOptions } from "./types";
+import { cloneDeep } from 'lodash';
+import { defaultFormState, defaultFieldState, defaultFieldSubscriptionOptions, defaultFormSubscriptionOptions } from "./defaultValues";
+import { getFieldValueFromSource, getChangeValue, setState, getStateChanges, cloneState } from "./utils";
 
 const EXECUTION_TIMER_IDENTIFIER = '[FORMERA] EXECUTION TIME: ';
 
@@ -10,7 +10,7 @@ export default class Form {
   private debug: boolean = false;
 
   /**Registered fields. */
-  private entries: FieldEntries;
+  private entries: String[];
 
   /**Form state. */
   private state: FormState;
@@ -18,147 +18,190 @@ export default class Form {
   /**Field states. */
   private fieldStates: FieldStates;
 
+  /**Subscriptions to fields. */
+  private fieldSubscriptions: FieldSubscriptions;
+
+  /**Subscriptions to form. */
+  private formSubscriptions: FormSubscriptions;
+
   /**Initialize a form with options. */
   constructor(options: FormOptions) {
     this.debug = !!options.debug;
 
-    this.entries = {};
+    this.initDebug('INIT');
+
+    this.entries = [];
 
     this.state = {
-      ...initialFormState,
+      ...defaultFormState,
       initialValues: cloneDeep(options.initialValues),
-      previousValues: cloneDeep(options.initialValues),
-      values: cloneDeep(options.initialValues)
+      values: cloneDeep(options.initialValues),
     };
 
+    this.state.previousState = cloneState(this.state) as any;
+
     this.fieldStates = {};
+
+    this.fieldSubscriptions = {};
+
+    this.formSubscriptions = [];
 
     this.change = this.change.bind(this);
     this.blur = this.blur.bind(this);
     this.focus = this.focus.bind(this);
 
-    this.log('Form initialized.');
+    this.endDebug();
   }
 
   /**Register the field. */
   public registerField(name: string): FieldHandler {
-    this.entries[name] = {
-      name,
-      subscriptions: [],
-    };
+    this.initDebug('REGISTER', name);
+
+    this.entries.push(name);
 
     this.fieldStates[name] = {
-      ...initialFieldState,
+      ...defaultFieldState,
       initialValue: getFieldValueFromSource(name, this.state.initialValues),
-      previousValue: getFieldValueFromSource(name, this.state.initialValues),
       value: getFieldValueFromSource(name, this.state.initialValues)
     }
 
-    this.log(`The field ( ${name} ) has been registered with state: \n`, JSON.stringify(this.fieldStates[name], null, 2));
+    this.fieldSubscriptions[name] = [];
+
+    this.endDebug();
 
     return {
+      ...this.fieldStates[name],
       onChange: (value: any) => this.change(name, value),
       onBlur: () => this.blur(name),
       onFocus: () => this.focus(name),
+      subscribe: (
+        callback: FieldSubscriptionCallback,
+        options: FieldSubscriptionOptions = { ...defaultFieldSubscriptionOptions }
+      ) => this.fieldSubscribe(name, callback, options)
     }
+  }
+
+  /**Unregister the field. */
+  public unregisterField(name: string) {
+    this.entries.splice(this.entries.indexOf(name), 1);
+    this.fieldStates[name] = null;
+    this.fieldSubscriptions[name] = null;
   }
 
   /**Do the focus actions in a field state. */
   public focus(field: string): void {
-    this.initDebug('BLUR', field);
-    let currentField = this.fieldStates[field];
+    this.initDebug('FOCUS', field);
 
-    currentField.active = true;
+    let fieldState = this.fieldStates[field];
+
+    setState(fieldState, 'active', true);
+
+    this.endDebug();
 
     this.notifySubscribers(field);
-    this.endDebug();
   }
 
   /**Do the change actions in a field state. */
-  public change(field: string, value: any): void {
+  public change(field: string, incommingValue: any): void {
     this.initDebug('CHANGE', field);
 
-    let currentField = this.fieldStates[field];
+    const value = getChangeValue(incommingValue);
 
-    currentField.previousValue = currentField.value;
-    currentField.value = value;
+    let fieldState = this.fieldStates[field];
 
-    set(this.state.previousValues, field, currentField.previousValue);
-    set(this.state.values, field, currentField.value);
+    setState(fieldState, 'value', value);
+    setState(fieldState, 'pristine', fieldState.initialValue === fieldState.value);
 
-    currentField.pristine = currentField.initialValue === currentField.value;
-
-    this.state.pristine = !currentField.pristine ? currentField.pristine : this.isFormPristine();
-
-    this.notifySubscribers(field);
+    setState(this.state, `values.${field}`, value);
+    setState(this.state, 'pristine', !fieldState.pristine ? fieldState.pristine : this.calcFormPristine());
 
     this.endDebug();
+
+    this.notifySubscribers(field);
   }
 
   /**Do the blur actions in a field state. */
   public blur(field: string): void {
-    this.initDebug('CHANGE', field);
-    let currentField = this.fieldStates[field];
+    this.initDebug('BLUR', field);
 
-    currentField.active = false;
-    currentField.touched = true;
+    let fieldState = this.fieldStates[field];
 
-    currentField.dirty = !currentField.pristine;
+    setState(fieldState, 'active', false);
+    setState(fieldState, 'touched', true);
+    setState(fieldState, 'dirty', !fieldState.pristine);
 
-    this.state.touched = true;
-
-    this.notifySubscribers(field);
+    setState(this.state, 'touched', true);
+    setState(this.state, 'dirty', !this.state.pristine);
 
     this.endDebug();
+
+    this.notifySubscribers(field);
   }
 
-  private notifySubscribers(name: string) {
-    const field = this.entries[name];
-    const { subscriptions } = field;
+  /**Subscribe to field. */
+  public fieldSubscribe(field: string, callback: FieldSubscriptionCallback, options: FieldSubscriptionOptions = { ...defaultFieldSubscriptionOptions }): void {
+    this.fieldSubscriptions[field].push({ callback, options })
+  }
 
+  /**Subscribe to form. */
+  public formSubscribe(callback: FormSubscriptionCallback, options: FormSubscriptionOptions = { ...defaultFormSubscriptionOptions }): void {
+    this.formSubscriptions.push({ callback, options });
+  }
 
-    if (subscriptions && subscriptions.length) {
-      // const formValues = cloneDeep(this.state.values);
-      // const fieldState = cloneDeep(this.state.fields[field.name]);
+  /**Notify all subscribers. */
+  private notifySubscribers(field?: string) {
+    if (field) {
+      const fieldState = this.fieldStates[field];
+      const fieldStateChanges = getStateChanges(fieldState);
 
-      for (const subcription of subscriptions) {
-        // subcription(fieldState, formValues);
+      this.log('CHANGES: ', fieldStateChanges);
+
+      for (const fieldSubscription of this.fieldSubscriptions[field]) {
+        if (fieldStateChanges.some(change => fieldSubscription.options[change])) {
+          fieldSubscription.callback(fieldState);
+        }
+      }
+    }
+
+    const formStateChanges = getStateChanges(this.state);
+
+    for (const formSubscription of this.formSubscriptions) {
+      if (formStateChanges.some(change => formSubscription.options[change])) {
+        formSubscription.callback(this.state);
       }
     }
   }
 
   /**Return form state. */
-  getState() {
+  public getState() {
     return this.state;
   }
 
   /**Calculate if the form is pristine. */
-  private isFormPristine() {
+  private calcFormPristine() {
     for (const key in this.fieldStates) {
       if (!this.fieldStates[key].pristine) return false;
     }
     return true;
   }
 
-  /**Verify if a field is registered. */
-  private hasField(name: string): boolean {
-    return Object.keys(this.entries).some(registeredName => registeredName === name);
-  }
-
+  /**Log messages. */
   private log(...logs: any): void {
-    if (this.debug) console.log('[FORMERA] ', ...logs);
+    if (this.debug) console.log('[FORMERA]', ...logs);
   }
 
+  /**Init the debug log with timer. */
   private initDebug(action: string, field?: string): void {
     if (this.debug) {
       let identifier: string;
       identifier = `[FORMERA] ACTION: "${action}"`;
-      if (field) identifier =  identifier.concat(` FIELD: "${field}"`);
+      if (field) identifier = identifier.concat(` FIELD: "${field}"`);
       console.groupCollapsed(identifier);
       console.time(EXECUTION_TIMER_IDENTIFIER);
     }
   }
 
+  /**End the debug log. */
   private endDebug(): void {
     if (this.debug) {
       console.timeEnd(EXECUTION_TIMER_IDENTIFIER);
