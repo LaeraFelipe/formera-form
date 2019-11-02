@@ -3,6 +3,8 @@ import { cloneDeep, set, get } from 'lodash';
 import { initialFormState, initialFieldState } from "./initialValues";
 import { getFieldValueFromSource } from "./utils";
 
+const EXECUTION_TIMER_IDENTIFIER = '[FORMERA] EXECUTION TIME: ';
+
 export default class Form {
   /**Indicates if the form is in debug mode. */
   private debug: boolean = false;
@@ -63,16 +65,19 @@ export default class Form {
 
   /**Do the focus actions in a field state. */
   public focus(field: string): void {
+    this.initDebug('BLUR', field);
     let currentField = this.fieldStates[field];
 
     currentField.active = true;
 
-    this.log(`Focus on field: ( ${field} ).`, currentField);
     this.notifySubscribers(field);
+    this.endDebug();
   }
 
   /**Do the change actions in a field state. */
   public change(field: string, value: any): void {
+    this.initDebug('CHANGE', field);
+
     let currentField = this.fieldStates[field];
 
     currentField.previousValue = currentField.value;
@@ -85,13 +90,14 @@ export default class Form {
 
     this.state.pristine = !currentField.pristine ? currentField.pristine : this.isFormPristine();
 
-    this.log(`Change on field: ( ${field} ).`, currentField);
-
     this.notifySubscribers(field);
+
+    this.endDebug();
   }
 
   /**Do the blur actions in a field state. */
   public blur(field: string): void {
+    this.initDebug('CHANGE', field);
     let currentField = this.fieldStates[field];
 
     currentField.active = false;
@@ -101,15 +107,15 @@ export default class Form {
 
     this.state.touched = true;
 
-    this.log(`Blur on field: ( ${field} ).`, currentField);
     this.notifySubscribers(field);
+
+    this.endDebug();
   }
 
   private notifySubscribers(name: string) {
     const field = this.entries[name];
     const { subscriptions } = field;
 
-    this.log(`Notifying subscribers for field (${name}).`);
 
     if (subscriptions && subscriptions.length) {
       // const formValues = cloneDeep(this.state.values);
@@ -142,4 +148,22 @@ export default class Form {
   private log(...logs: any): void {
     if (this.debug) console.log('[FORMERA] ', ...logs);
   }
+
+  private initDebug(action: string, field?: string): void {
+    if (this.debug) {
+      let identifier: string;
+      identifier = `[FORMERA] ACTION: "${action}"`;
+      if (field) identifier =  identifier.concat(` FIELD: "${field}"`);
+      console.groupCollapsed(identifier);
+      console.time(EXECUTION_TIMER_IDENTIFIER);
+    }
+  }
+
+  private endDebug(): void {
+    if (this.debug) {
+      console.timeEnd(EXECUTION_TIMER_IDENTIFIER);
+      console.groupEnd();
+    }
+  }
+
 }
