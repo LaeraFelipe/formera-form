@@ -1,4 +1,4 @@
-import Form from "./Form";
+import Formera from "./Formera";
 
 const initialValues = {
   name: 'Cleveland',
@@ -31,7 +31,7 @@ const initialValues = {
   ]
 }
 
-const form = new Form(
+const form = new Formera(
   {
     initialValues,
     debug: true

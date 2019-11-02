@@ -154,7 +154,7 @@ export default class Form {
       const fieldState = this.fieldStates[field];
       const fieldStateChanges = getStateChanges(fieldState);
 
-      this.log('CHANGES: ', fieldStateChanges);
+      this.log('FIELD CHANGES: ', fieldStateChanges);
 
       for (const fieldSubscription of this.fieldSubscriptions[field]) {
         if (fieldStateChanges.some(change => fieldSubscription.options[change])) {
@@ -164,6 +164,8 @@ export default class Form {
     }
 
     const formStateChanges = getStateChanges(this.state);
+
+    this.log('FORM CHANGES: ', formStateChanges);
 
     for (const formSubscription of this.formSubscriptions) {
       if (formStateChanges.some(change => formSubscription.options[change])) {
