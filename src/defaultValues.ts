@@ -1,4 +1,4 @@
-import { FormState, FieldState, FormSubscriptionOptions, FieldSubscriptionOptions } from "./types";
+import { FormState, FieldState, FormSubscriptionOptions, FieldSubscriptionOptions, FieldRegisterOptions } from "./types";
 
 export const defaultFormState: FormState = {
   touched: false,
@@ -51,4 +51,9 @@ export const defaultFormSubscriptionOptions: FormSubscriptionOptions = {
   validating: true,
   values: true,
   initialValues: false
+}
+
+export const defaultFieldRegisterOptions: FieldRegisterOptions = {
+  validationType: 'onChange',
+  validators: null
 }

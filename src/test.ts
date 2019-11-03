@@ -38,7 +38,7 @@ const form = new Formera(
   }
 );
 
-const nameHandler = form.registerField('name');
+const nameHandler = form.registerField('name', { validators: ['required']});
 const lastNameHandler = form.registerField('lastName');
 const genderHandler = form.registerField('gender');
 const typeIdHandler = form.registerField('typeId');
@@ -53,13 +53,9 @@ let changeCount = 0;
 
 firstAddressHandler.onFocus();
 
-const interval = setInterval(() => {
-  firstAddressHandler.onChange(`Rua mudada ${changeCount}`);
-  changeCount++;
+nameHandler.onChange(`Rua mudada ${changeCount}`);
 
-  if (changeCount == 5) clearInterval(interval);
 
-}, 1000)
 firstAddressHandler.onBlur();
 
 

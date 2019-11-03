@@ -1,10 +1,13 @@
 {
-  "name": "formera",
-  "version": "1.0.0",
+  "name": "formera-forms",
+  "version": "1.0.2",
   "description": "",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
-    "test": "nodemon dist/test.js"
+    "build": "tsc",
+    "test": "nodemon dist/test.js",
+    "prepublish": "tsc"
   },
   "author": "Felipe Laera",
   "license": "ISC",

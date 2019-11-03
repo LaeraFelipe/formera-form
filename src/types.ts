@@ -1,6 +1,20 @@
 export interface FormOptions {
   initialValues: any,
+  customValidators?: ValidatorSource,
   debug?: boolean
+}
+
+export interface FieldRegisterOptions {
+  validationType?: 'onChange' | 'onBlur',
+  validators?: Array<string | FieldValidator>,
+}
+
+export interface FieldEntrie {
+  options: FieldRegisterOptions,
+}
+
+export type FieldEntries = {
+  [field: string]: FieldEntrie
 }
 
 export interface FormState {
@@ -32,7 +46,7 @@ export interface FieldState {
 }
 
 export type FieldStates = {
-  [key: string]: FieldState
+  [field: string]: FieldState
 }
 
 export interface FieldSubscriptionOptions {
@@ -76,18 +90,25 @@ export interface FormSubscription {
 }
 
 export type FieldSubscriptions = {
-  [key: string]: FieldSubscription[]
+  [field: string]: FieldSubscription[]
 }
 
 export type FormSubscriptions = FormSubscription[];
 
-export interface FieldRegisterOptions {
-
-}
-
 export interface FieldHandler {
   onChange(value: any): void,
   onBlur(): void,
-  onFocus(): void
+  onFocus(): void,
   subscribe(callback: FieldSubscriptionCallback, options?: FieldSubscriptionOptions): void,
+}
+
+export interface FieldValidator {
+  name: string,
+  params?: []
+}
+
+export type FieldValidatorFunction = (fieldState: FieldState, formValues: any, params: any) => string | Promise<string>;
+
+export interface ValidatorSource {
+  [name: string]: FieldValidatorFunction,
 }
