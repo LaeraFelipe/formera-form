@@ -65,7 +65,7 @@ export default class Form {
   }
 
   /**Register the field. */
-  public registerField(name: string, options?: FieldRegisterOptions): FieldHandler {
+  public registerField(name: string, options?: FieldRegisterOptions): Field {
     this.initDebug('REGISTER', name);
 
     options = { ...defaultFieldRegisterOptions, ...options };
