@@ -1,8 +1,8 @@
 import * as fieldValidators from './validation/fieldValidators'
-import { FormState, FormOptions, FieldHandler, FieldStates, FieldSubscriptionOptions, FormSubscriptionCallback, FieldSubscriptions, FormSubscriptions, FieldSubscriptionCallback, FormSubscriptionOptions, FieldEntries, FieldRegisterOptions, ValidatorSource } from "./types";
+import { FormState, FormOptions, FieldHandler, FieldStates, FieldSubscriptionOptions, FormSubscriptionCallback, FieldSubscriptions, FormSubscriptions, FieldSubscriptionCallback, FormSubscriptionOptions, FieldEntries, FieldRegisterOptions, ValidatorSource, Field } from "./types";
 import { cloneDeep } from 'lodash';
 import { defaultFormState, defaultFieldState, defaultFieldSubscriptionOptions, defaultFormSubscriptionOptions, defaultFieldRegisterOptions } from "./defaultValues";
-import { getFieldValueFromSource, getChangeValue, setState, getStateChanges, cloneState } from "./utils";
+import { getFieldValueFromSource, getChangeValue, getStateChanges, isFieldValueEqual, setState } from "./utils";
 
 /**Timer identifier to log. */
 const EXECUTION_TIMER_IDENTIFIER = '[FORMERA] EXECUTION TIME: ';
@@ -29,6 +29,8 @@ export default class Form {
   /**Validators. */
   private fieldValidators: ValidatorSource;
 
+  private handleSubmit: (values: any) => any;
+
   /**Initialize a form with options. */
   constructor(options: FormOptions) {
     this.debug = !!options.debug;
@@ -36,6 +38,8 @@ export default class Form {
     this.initDebug('INIT');
 
     this.fieldValidators = { ...fieldValidators, ...options.customValidators }
+
+    this.handleSubmit = options.onSubmit;
 
     this.fieldEntries = {};
 
@@ -45,7 +49,7 @@ export default class Form {
       values: cloneDeep(options.initialValues),
     };
 
-    this.state.previousState = cloneState(this.state) as any;
+    this.state.previousState = cloneDeep(this.state) as any;
 
     this.fieldStates = {};
 
@@ -71,15 +75,12 @@ export default class Form {
     this.fieldStates[name] = {
       ...defaultFieldState,
       initialValue: getFieldValueFromSource(name, this.state.initialValues),
-      value: getFieldValueFromSource(name, this.state.initialValues)
+      value: getFieldValueFromSource(name, this.state.initialValues) || ''
     }
 
     this.fieldSubscriptions[name] = [];
 
-    this.endDebug();
-
-    return {
-      ...this.fieldStates[name],
+    this.fieldEntries[name].handler = {
       onChange: (value: any) => this.change(name, value),
       onBlur: () => this.blur(name),
       onFocus: () => this.focus(name),
@@ -88,6 +89,10 @@ export default class Form {
         options: FieldSubscriptionOptions = { ...defaultFieldSubscriptionOptions }
       ) => this.fieldSubscribe(name, callback, options)
     }
+
+    this.endDebug();
+
+    return this.getField(name);
   }
 
   /**Unregister the field. */
@@ -103,7 +108,7 @@ export default class Form {
 
     let fieldState = this.fieldStates[field];
 
-    setState(fieldState, 'active', true);
+    setState(fieldState, { active: true });
 
     this.endDebug();
 
@@ -119,11 +124,15 @@ export default class Form {
     const fieldEntrie = this.fieldEntries[field];
     let fieldState = this.fieldStates[field];
 
-    setState(fieldState, 'value', value);
-    setState(fieldState, 'pristine', fieldState.initialValue === fieldState.value);
+    setState(fieldState, {
+      value,
+      pristine: isFieldValueEqual(fieldState.initialValue, value)
+    });
 
-    setState(this.state, `values.${field}`, value);
-    setState(this.state, 'pristine', !fieldState.pristine ? fieldState.pristine : this.calcFormPristine());
+    setState(this.state, {
+      [`values.${field}`]: value,
+      pristine: !fieldState.pristine ? fieldState.pristine : this.calcFormPristine()
+    })
 
     this.endDebug();
 
@@ -141,12 +150,18 @@ export default class Form {
     const fieldEntrie = this.fieldEntries[field];
     let fieldState = this.fieldStates[field];
 
-    setState(fieldState, 'active', false);
-    setState(fieldState, 'touched', true);
-    setState(fieldState, 'dirty', !fieldState.pristine);
+    setState(fieldState, {
+      active: false,
+      touched: true,
+      dirty: !fieldState.pristine
+    });
 
-    setState(this.state, 'touched', true);
-    setState(this.state, 'dirty', !this.state.pristine);
+    setState(this.state, {
+      touched: true,
+      dirty: !this.state.pristine
+    })
+
+    this.log('FIELDSTATE', fieldState);
 
     this.endDebug();
 
@@ -157,58 +172,15 @@ export default class Form {
     }
   }
 
-  /**Subscribe to field. */
-  public fieldSubscribe(field: string, callback: FieldSubscriptionCallback, options: FieldSubscriptionOptions = { ...defaultFieldSubscriptionOptions }): void {
-    this.fieldSubscriptions[field].push({ callback, options })
-  }
-
-  /**Subscribe to form. */
-  public formSubscribe(callback: FormSubscriptionCallback, options: FormSubscriptionOptions = { ...defaultFormSubscriptionOptions }): void {
-    this.formSubscriptions.push({ callback, options });
-  }
-
-  /**Notify all subscribers. */
-  private notifySubscribers(field?: string) {
-    if (field) {
-      const fieldState = this.fieldStates[field];
-      const fieldStateChanges = getStateChanges(fieldState);
-
-      this.log('FIELD CHANGES: ', fieldStateChanges);
-
-      for (const fieldSubscription of this.fieldSubscriptions[field]) {
-        if (fieldStateChanges.some(change => fieldSubscription.options[change])) {
-          fieldSubscription.callback(fieldState);
-        }
-      }
-    }
-
-    const formStateChanges = getStateChanges(this.state);
-
-    this.log('FORM CHANGES: ', formStateChanges);
-
-    for (const formSubscription of this.formSubscriptions) {
-      if (formStateChanges.some(change => formSubscription.options[change])) {
-        formSubscription.callback(this.state);
-      }
-    }
-  }
-
-  /**Return form state. */
-  public getState() {
-    return this.state;
-  }
-
   /**Do the field validation. */
-  private async validateField(field: string): Promise<void> {
-    console.time('VALIDATION TIME: ');
-
+  public async validateField(field: string): Promise<void> {
     const { validators } = this.fieldEntries[field].options;
 
     if (validators && validators.length) {
       const fieldState = this.fieldStates[field];
 
-      setState(fieldState, 'validating', true);
-      setState(this.state, 'validating', true);
+      setState(fieldState, { validating: true });
+      setState(this.state, { validating: true });
 
       this.notifySubscribers(field);
 
@@ -234,28 +206,85 @@ export default class Form {
         }
       }
 
-      if (error) {
-        setState(fieldState, 'valid', false);
-        setState(fieldState, 'error', error);
-
-        setState(this.state, 'valid', false);
-        setState(this.state, `errors.${field}`, error);
-      } else {
-        setState(fieldState, 'valid', true);
-        setState(fieldState, 'error', null);
-
-        setState(this.state, `valid`, this.calcFormValid());
-        setState(this.state, `errors.${field}`, null);
+      setState(fieldState, { validating: false, valid: !error, error });
+      setState(this.state, {
+        validating: false,
+        valid: error ? false : this.calcFormValid(),
+        [`errors.${field}`]: error
       }
-
-      setState(fieldState, 'validating', false);
-      setState(this.state, 'validating', false);
-
-      console.groupCollapsed(`[FORMERA] VALIDATE FIELD "${field}"`)
-      console.timeEnd('VALIDATION TIME: ');
-      console.groupEnd();
+      );
 
       this.notifySubscribers(field);
+    }
+  }
+
+  /**Submmit the form. */
+  public async submit() {
+    setState(this.state, { submitting: true });
+    await this.handleSubmit(this.state.values);
+    setState(this.state, { submitting: false });
+  }
+
+  /**Subscribe to field. */
+  public fieldSubscribe(field: string, callback: FieldSubscriptionCallback, options: FieldSubscriptionOptions = { ...defaultFieldSubscriptionOptions }): void {
+    this.fieldSubscriptions[field].push({ callback, options })
+  }
+
+  /**Subscribe to form. */
+  public formSubscribe(callback: FormSubscriptionCallback, options: FormSubscriptionOptions = { ...defaultFormSubscriptionOptions }): void {
+    this.formSubscriptions.push({ callback, options });
+  }
+
+  /**Notify all subscribers. */
+  private notifySubscribers(field?: string) {
+    if (field) {
+      const fieldState = this.fieldStates[field];
+      const fieldStateChanges = getStateChanges(fieldState);
+
+      this.log('FIELD CHANGES: ', fieldStateChanges);
+
+      for (const fieldSubscription of this.fieldSubscriptions[field]) {
+        if (fieldStateChanges.some(change => fieldSubscription.options[change])) {
+          fieldSubscription.callback(this.getField(field));
+        }
+      }
+    }
+
+    const formStateChanges = getStateChanges(this.state);
+
+    this.log('FORM CHANGES: ', formStateChanges);
+
+    for (const formSubscription of this.formSubscriptions) {
+      if (formStateChanges.some(change => formSubscription.options[change])) {
+        formSubscription.callback(this.state);
+      }
+    }
+  }
+
+  /**Return form state. */
+  public getState() {
+    return this.state;
+  }
+
+  /**Returns a field to manipulate and extract data. */
+  private getField(field: string): Field {
+    const fieldState = this.fieldStates[field];
+    const fieldHandler = this.fieldEntries[field].handler;
+    return {
+      ...fieldHandler,
+      value: fieldState.value,
+      disabled: fieldState.disabled,
+      meta: {
+        active: fieldState.active,
+        data: fieldState.data,
+        dirty: fieldState.dirty,
+        error: fieldState.error,
+        initialValue: fieldState.initialValue,
+        pristine: fieldState.pristine,
+        touched: fieldState.touched,
+        valid: fieldState.valid,
+        validating: fieldState.validating
+      }
     }
   }
 

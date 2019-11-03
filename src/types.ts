@@ -1,5 +1,6 @@
 export interface FormOptions {
   initialValues: any,
+  onSubmit: (values: any) => any,
   customValidators?: ValidatorSource,
   debug?: boolean
 }
@@ -11,6 +12,7 @@ export interface FieldRegisterOptions {
 
 export interface FieldEntrie {
   options: FieldRegisterOptions,
+  handler?: FieldHandler,
 }
 
 export type FieldEntries = {
@@ -42,7 +44,7 @@ export interface FieldState {
   initialValue: any,
   value: any,
   data?: any,
-  previousState: Omit<FormState, 'previousState'>,
+  previousState: Omit<FieldState, 'previousState'>,
 }
 
 export type FieldStates = {
@@ -75,7 +77,7 @@ export interface FormSubscriptionOptions {
   errors?: boolean,
 }
 
-export type FieldSubscriptionCallback = (fieldState: FieldState) => void;
+export type FieldSubscriptionCallback = (field: Field) => void;
 
 export type FormSubscriptionCallback = (formState: FormState) => void;
 
@@ -100,6 +102,24 @@ export interface FieldHandler {
   onBlur(): void,
   onFocus(): void,
   subscribe(callback: FieldSubscriptionCallback, options?: FieldSubscriptionOptions): void,
+}
+
+export interface FieldMeta {
+  active: boolean,
+  pristine: boolean,
+  touched: boolean,
+  dirty: boolean,
+  valid: boolean,
+  validating: boolean,
+  error: string,
+  data: string,
+  initialValue: any,
+}
+
+export interface Field extends FieldHandler {
+  meta: FieldMeta,
+  disabled: boolean,
+  value: any
 }
 
 export interface FieldValidator {

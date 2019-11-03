@@ -34,32 +34,23 @@ const initialValues = {
 const form = new Formera(
   {
     initialValues,
-    debug: true
+    debug: true,
+    onSubmit: (test) => {}
   }
 );
 
 const nameHandler = form.registerField('name', { validators: ['required']});
-const lastNameHandler = form.registerField('lastName');
-const genderHandler = form.registerField('gender');
-const typeIdHandler = form.registerField('typeId');
 
-const firstAddressHandler = form.registerField('address[0].street');
-
-firstAddressHandler.subscribe((fieldstate) => {
+nameHandler.subscribe((fieldstate) => {
   console.log('Runing subscribe.')
 }, { value: true });
 
-let changeCount = 0;
 
-firstAddressHandler.onFocus();
+nameHandler.onFocus();
 
-nameHandler.onChange(`Rua mudada ${changeCount}`);
+nameHandler.onChange(`jamantex`);
 
-
-firstAddressHandler.onBlur();
-
-
-console.log('----------------------------------------------------------------------------------------------------');
+nameHandler.onBlur();
 
 // console.log('Formstate', JSON.stringify(form.getState(), null, 2));
 

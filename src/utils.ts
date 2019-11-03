@@ -1,4 +1,4 @@
-import { cloneDeep, get, set, isEqual } from 'lodash';
+import { cloneDeep, get, set, isEqual, omit } from 'lodash';
 
 /**Extract the field value from a source using deep copy if necessary. */
 export function getFieldValueFromSource(path: string, source: any) {
@@ -21,25 +21,23 @@ export function getChangeValue(value: any) {
   }
 }
 
-/**Clone state. */
-export function cloneState(state: any, clonePreviousValues = false) {
-  let clone = {};
-  for (const key in state) {
-    if (clonePreviousValues || key !== 'previousValues') {
-      clone[key] = state[key];
-    }
+/**Set field state. */
+export function setState(state: any, value: any) {
+  state.previousState = cloneDeep(omit(state, 'previousState'));
+
+  for (const key in value) {
+    set(state, key, value[key]);
   }
-  return clone;
 }
 
-/**Set state value. */
-export function setState(state: any, path: string, value: any) {
-  if (!state.previousState) {
-    state.previousState = cloneState(state)
+export function isFieldValueEqual(first: any, second: any): boolean {
+  if (typeof first === 'object') {
+    return isEqual(first, second);
+  } else {
+    return first === second;
   }
-  set(state.previousState, path, get(state, path));
-  set(state, path, value);
 }
+
 
 /**Get state changes. */
 export function getStateChanges(state: any): Array<string> {
