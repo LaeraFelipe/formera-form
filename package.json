@@ -1,6 +1,6 @@
 {
-  "name": "formera-forms",
-  "version": "1.0.9",
+  "name": "formera-form",
+  "version": "1.0.0",
   "description": "",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
