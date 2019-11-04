@@ -54,6 +54,5 @@ export const defaultFormSubscriptionOptions: FormSubscriptionOptions = {
 }
 
 export const defaultFieldRegisterOptions: FieldRegisterOptions = {
-  validationType: 'onChange',
   validators: null
 }

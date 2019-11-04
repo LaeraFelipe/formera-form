@@ -78,9 +78,9 @@ export default class Form {
   public registerField(name: string, options?: FieldRegisterOptions): Input {
     this.initDebug('REGISTER', name);
 
-    options.validationType = options.validationType || this.validationType;
-
     options = { ...defaultFieldRegisterOptions, ...options };
+
+    options.validationType = options.validationType || this.validationType;
 
     this.fieldEntries[name] = { options };
 
@@ -110,8 +110,8 @@ export default class Form {
   /**Unregister the field. */
   public unregisterField(name: string) {
     delete this.fieldEntries[name];
-    delete this.fieldStates[name] 
-    delete this.fieldSubscriptions[name] 
+    delete this.fieldStates[name]
+    delete this.fieldSubscriptions[name]
   }
 
   /**Do the focus actions in a field state. */
