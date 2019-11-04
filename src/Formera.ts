@@ -1,5 +1,5 @@
-import * as fieldValidators from './validation/fieldValidators'
-import { FormState, FormOptions, FieldHandler, FieldStates, FieldSubscriptionOptions, FormSubscriptionCallback, FieldSubscriptions, FormSubscriptions, FieldSubscriptionCallback, FormSubscriptionOptions, FieldEntries, FieldRegisterOptions, ValidatorSource, Field } from "./types";
+import * as fieldValidators from './validation/validators'
+import { FormState, FormOptions, FieldStates, FieldSubscriptionOptions, FormSubscriptionCallback, FieldSubscriptions, FormSubscriptions, FieldSubscriptionCallback, FormSubscriptionOptions, FieldEntries, FieldRegisterOptions, ValidatorSource, Input } from "./types";
 import { cloneDeep } from 'lodash';
 import { defaultFormState, defaultFieldState, defaultFieldSubscriptionOptions, defaultFormSubscriptionOptions, defaultFieldRegisterOptions } from "./defaultValues";
 import { getFieldValueFromSource, getChangeValue, getStateChanges, isFieldValueEqual, setState } from "./utils";
@@ -29,13 +29,19 @@ export default class Form {
   /**Validators. */
   private fieldValidators: ValidatorSource;
 
+  /**Callback to submit form. */
   private handleSubmit: (values: any) => any;
+
+  /**Validation type. */
+  private validationType: 'onChange' | 'onBlur' = 'onChange';
 
   /**Initialize a form with options. */
   constructor(options: FormOptions) {
     this.debug = !!options.debug;
 
     this.initDebug('INIT');
+
+    this.validationType = options.validationType || this.validationType;
 
     this.fieldValidators = { ...fieldValidators, ...options.customValidators }
 
@@ -65,8 +71,10 @@ export default class Form {
   }
 
   /**Register the field. */
-  public registerField(name: string, options?: FieldRegisterOptions): Field {
+  public registerField(name: string, options?: FieldRegisterOptions): Input {
     this.initDebug('REGISTER', name);
+
+    options.validationType = options.validationType || this.validationType;
 
     options = { ...defaultFieldRegisterOptions, ...options };
 
@@ -98,8 +106,8 @@ export default class Form {
   /**Unregister the field. */
   public unregisterField(name: string) {
     delete this.fieldEntries[name];
-    this.fieldStates[name] = null;
-    this.fieldSubscriptions[name] = null;
+    delete this.fieldStates[name] 
+    delete this.fieldSubscriptions[name] 
   }
 
   /**Do the focus actions in a field state. */
@@ -267,7 +275,7 @@ export default class Form {
   }
 
   /**Returns a field to manipulate and extract data. */
-  private getField(field: string): Field {
+  private getField(field: string): Input {
     const fieldState = this.fieldStates[field];
     const fieldHandler = this.fieldEntries[field].handler;
     return {

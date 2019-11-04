@@ -2,6 +2,7 @@ export interface FormOptions {
   initialValues: any,
   onSubmit: (values: any) => any,
   customValidators?: ValidatorSource,
+  validationType?: 'onChange' | 'onBlur',
   debug?: boolean
 }
 
@@ -77,7 +78,7 @@ export interface FormSubscriptionOptions {
   errors?: boolean,
 }
 
-export type FieldSubscriptionCallback = (field: Field) => void;
+export type FieldSubscriptionCallback = (field: Input) => void;
 
 export type FormSubscriptionCallback = (formState: FormState) => void;
 
@@ -116,7 +117,7 @@ export interface FieldMeta {
   initialValue: any,
 }
 
-export interface Field extends FieldHandler {
+export interface Input extends FieldHandler {
   meta: FieldMeta,
   disabled: boolean,
   value: any
