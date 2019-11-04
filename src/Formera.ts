@@ -66,6 +66,10 @@ export default class Form {
     this.change = this.change.bind(this);
     this.blur = this.blur.bind(this);
     this.focus = this.focus.bind(this);
+    this.registerField = this.registerField.bind(this);
+    this.unregisterField = this.unregisterField.bind(this);
+    this.fieldSubscribe = this.fieldSubscribe.bind(this);
+    this.formSubscribe = this.formSubscribe.bind(this);
 
     this.endDebug();
   }
