@@ -20,63 +20,35 @@ export type FieldEntries = {
   [field: string]: FieldEntrie
 }
 
-export interface FormState {
+export interface CommonState {
+  active: boolean,
   touched: boolean,
-  dirty: boolean,
   pristine: boolean,
+  dirty: boolean,
   valid: boolean,
   validating: boolean,
   submitting: boolean,
+}
+
+export interface FormState extends CommonState {
   initialValues: any,
   values: any,
-  errors?: { [key: string]: string },
   previousState: Omit<FormState, 'previousState'>,
+  errors?: { [field: string]: string },
 }
 
-export interface FieldState {
-  active: boolean,
-  touched: boolean,
-  dirty: boolean,
-  pristine: boolean,
-  valid: boolean,
-  validating: boolean,
+export interface FieldState extends CommonState {
   disabled: boolean,
-  error?: string,
   initialValue: any,
   value: any,
-  data?: any,
   previousState: Omit<FieldState, 'previousState'>,
+  error?: string,
+  data?: any,
 }
 
-export type FieldStates = {
-  [field: string]: FieldState
-}
+export interface FormSubscriptionOptions extends Partial<Omit<FormState, 'previousState'>> { };
 
-export interface FieldSubscriptionOptions {
-  active?: boolean,
-  touched?: boolean,
-  dirty?: boolean,
-  pristine?: boolean,
-  valid?: boolean,
-  validating?: boolean,
-  disabled?: boolean,
-  error?: boolean,
-  initialValue?: boolean,
-  value?: boolean,
-  data?: boolean,
-}
-
-export interface FormSubscriptionOptions {
-  touched?: boolean,
-  dirty?: boolean,
-  pristine?: boolean,
-  valid?: boolean,
-  validating?: boolean,
-  submitting?: boolean,
-  initialValues?: boolean,
-  values?: boolean,
-  errors?: boolean,
-}
+export interface FieldSubscriptionOptions extends Partial<Omit<FieldState, 'previousState'>> { };
 
 export type FieldSubscriptionCallback = (field: Input) => void;
 
@@ -92,12 +64,6 @@ export interface FormSubscription {
   callback: FormSubscriptionCallback
 }
 
-export type FieldSubscriptions = {
-  [field: string]: FieldSubscription[]
-}
-
-export type FormSubscriptions = FormSubscription[];
-
 export interface FieldHandler {
   onChange(value: any): void,
   onBlur(): void,
@@ -105,17 +71,7 @@ export interface FieldHandler {
   subscribe(callback: FieldSubscriptionCallback, options?: FieldSubscriptionOptions): void,
 }
 
-export interface FieldMeta {
-  active: boolean,
-  pristine: boolean,
-  touched: boolean,
-  dirty: boolean,
-  valid: boolean,
-  validating: boolean,
-  error: string,
-  data: string,
-  initialValue: any,
-}
+export interface FieldMeta extends Omit<FieldState, 'value' | 'previousState'> { }
 
 export interface Input extends FieldHandler {
   meta: FieldMeta,
@@ -128,8 +84,8 @@ export interface FieldValidator {
   params?: []
 }
 
-export type FieldValidatorFunction = (fieldState: FieldState, formValues: any, params: any) => string | Promise<string>;
+export type ValidatorFunction = (fieldState: FieldState, formValues: any, params: any) => string | Promise<string>;
 
 export interface ValidatorSource {
-  [name: string]: FieldValidatorFunction,
+  [name: string]: ValidatorFunction,
 }

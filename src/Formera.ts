@@ -1,8 +1,8 @@
 import * as fieldValidators from './validation/validators'
-import { FormState, FormOptions, FieldStates, FieldSubscriptionOptions, FormSubscriptionCallback, FieldSubscriptions, FormSubscriptions, FieldSubscriptionCallback, FormSubscriptionOptions, FieldEntries, FieldRegisterOptions, ValidatorSource, Input } from "./types";
-import { cloneDeep } from 'lodash';
-import { defaultFormState, defaultFieldState, defaultFieldSubscriptionOptions, defaultFormSubscriptionOptions, defaultFieldRegisterOptions } from "./defaultValues";
+import { FormState, FormOptions, FieldSubscriptionOptions, FormSubscriptionCallback, FieldSubscriptionCallback, FormSubscriptionOptions, FieldEntries, FieldRegisterOptions, ValidatorSource, Input, FieldState, FieldSubscription, FormSubscription } from "./types";
+import { defaultFormState, defaultFieldState, defaultFieldSubscriptionOptions, defaultFormSubscriptionOptions, defaultFieldRegisterOptions } from "./default-values";
 import { getFieldValueFromSource, getChangeValue, getStateChanges, isFieldValueEqual, setState } from "./utils";
+import { cloneDeep } from 'lodash';
 
 /**Timer identifier to log. */
 const EXECUTION_TIMER_IDENTIFIER = '[FORMERA] EXECUTION TIME: ';
@@ -18,16 +18,16 @@ export default class Form {
   private state: FormState;
 
   /**Field states. */
-  private fieldStates: FieldStates;
+  private fieldStates: { [field: string]: FieldState };
 
   /**Subscriptions to fields. */
-  private fieldSubscriptions: FieldSubscriptions;
+  private fieldSubscriptions: { [field: string]: FieldSubscription[] };
 
   /**Subscriptions to form. */
-  private formSubscriptions: FormSubscriptions;
+  private formSubscriptions: FormSubscription[];
 
   /**Validators. */
-  private fieldValidators: ValidatorSource;
+  private validators: ValidatorSource;
 
   /**Callback to submit form. */
   private handleSubmit: (values: any) => any;
@@ -43,7 +43,7 @@ export default class Form {
 
     this.validationType = options.validationType || this.validationType;
 
-    this.fieldValidators = { ...fieldValidators, ...options.customValidators }
+    this.validators = { ...fieldValidators, ...options.customValidators }
 
     this.handleSubmit = options.onSubmit;
 
@@ -210,7 +210,7 @@ export default class Form {
 
         try {
           if (typeof validator === 'string') {
-            error = await this.fieldValidators[validatorName](fieldState, this.state.values, validatorParams);
+            error = await this.validators[validatorName](fieldState, this.state.values, validatorParams);
             if (error) break;
           }
         } catch (error) {
@@ -287,6 +287,8 @@ export default class Form {
       value: fieldState.value,
       disabled: fieldState.disabled,
       meta: {
+        disabled: fieldState.disabled,
+        submitting: fieldState.submitting,
         active: fieldState.active,
         data: fieldState.data,
         dirty: fieldState.dirty,

@@ -1,6 +1,7 @@
 import { FormState, FieldState, FormSubscriptionOptions, FieldSubscriptionOptions, FieldRegisterOptions } from "./types";
 
 export const defaultFormState: FormState = {
+  active: false,
   touched: false,
   dirty: false,
   pristine: true,
@@ -14,6 +15,7 @@ export const defaultFormState: FormState = {
 }
 
 export const defaultFieldState: FieldState = {
+  submitting: false,
   active: false,
   touched: false,
   dirty: false,
@@ -31,7 +33,7 @@ export const defaultFieldSubscriptionOptions: FieldSubscriptionOptions = {
   active: true,
   dirty: true,
   disabled: true,
-  error: true,
+  error: null,
   pristine: true,
   touched: true,
   valid: true,
@@ -43,7 +45,7 @@ export const defaultFieldSubscriptionOptions: FieldSubscriptionOptions = {
 
 export const defaultFormSubscriptionOptions: FormSubscriptionOptions = {
   dirty: true,
-  errors: true,
+  errors: null,
   pristine: true,
   submitting: true,
   touched: true,
