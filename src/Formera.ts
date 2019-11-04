@@ -9,7 +9,7 @@ const EXECUTION_TIMER_IDENTIFIER = '[FORMERA] EXECUTION TIME: ';
 
 export default class Form {
   /**Indicates if the form is in debug mode. */
-  private debug: boolean = false;
+  public debug: boolean = false;
 
   /**Registered fields. */
   private fieldEntries: FieldEntries;
