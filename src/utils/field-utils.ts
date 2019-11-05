@@ -1,5 +1,5 @@
 import { FieldState } from "../types";
-import { cloneDeep, get, set } from 'lodash';
+import { cloneDeep, get, set, isEqual as lodashEqual } from 'lodash';
 
 /**Clone form state. */
 export function cloneState(state: FieldState): Omit<FieldState, 'previousState'> {
@@ -46,7 +46,7 @@ export function getFieldValue(values: any, path: string) {
 /**Compare field values. */
 export function isEqual(first: any, second: any) {
   if (typeof first === 'object') {
-    return isEqual(first, second);
+    return lodashEqual(first, second);
   } else {
     return first === second;
   }
