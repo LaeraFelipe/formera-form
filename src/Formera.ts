@@ -72,7 +72,7 @@ export default class Formera {
 
     options = {
       ...defaultFieldRegisterOptions,
-      validationType: options.validationType,
+      validationType: this.options.validationType,
       ...options
     };
 
