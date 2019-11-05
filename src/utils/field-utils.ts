@@ -32,7 +32,7 @@ export function setState(state: FieldState, changes: { [key in keyof Partial<Omi
 }
 
 /**Get field value from form values. */
-export function getFieldValue(values: any, path) {
+export function getFieldValue(values: any, path: string) {
   let value = get(values, path);
 
   //Cloning the value if it is an object to prevent unwanted modifications.

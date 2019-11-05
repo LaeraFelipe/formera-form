@@ -37,6 +37,8 @@ export default class Formera {
 
     this.initDebug('INIT');
 
+    this.log('FORM OPTIONS', this.options);
+
     this.validators = { ...fieldValidators, ...options.customValidators }
 
     this.fieldEntries = {};
@@ -76,14 +78,14 @@ export default class Formera {
       stopValidationOnFirstError: options.stopValidationOnFirstError || defaultFieldRegisterOptions.stopValidationOnFirstError
     };
 
-    this.log('FORM OPTIONS', options);
+    this.log('FIELD OPTIONS', options);
 
     this.fieldEntries[name] = { options };
 
     this.fieldStates[name] = {
       ...defaultFieldState,
-      initialValue: fieldUtils.getFieldValue(name, this.state.initialValues),
-      value: fieldUtils.getFieldValue(name, this.state.initialValues) || ''
+      initialValue: fieldUtils.getFieldValue(this.state.values, name),
+      value: fieldUtils.getFieldValue(this.state.values, name) || ''
     }
 
     this.fieldSubscriptions[name] = [];
