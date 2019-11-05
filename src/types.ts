@@ -9,11 +9,12 @@ export interface FormOptions {
 export interface FieldRegisterOptions {
   validationType?: 'onChange' | 'onBlur',
   validators?: Array<string | FieldValidator>,
+  stopValidationOnFirstError?: boolean,
 }
 
 export interface FieldEntrie {
   options: FieldRegisterOptions,
-  handler?: FieldHandler,
+  handler?: InputHandlers,
 }
 
 export type FieldEntries = {
@@ -44,11 +45,16 @@ export interface FieldState extends CommonState {
   previousState: Omit<FieldState, 'previousState'>,
   error?: string,
   data?: any,
+  errors?: { [validator: string]: string },
 }
 
-export interface FormSubscriptionOptions extends Partial<Omit<FormState, 'previousState'>> { };
+export type FormSubscriptionOptions = {
+  [P in keyof Partial<Omit<FormState, 'previousState'>>]: boolean
+}
 
-export interface FieldSubscriptionOptions extends Partial<Omit<FieldState, 'previousState'>> { };
+export type FieldSubscriptionOptions = {
+  [P in keyof Partial<Omit<FieldState, 'previousState'>>]: boolean
+};
 
 export type FieldSubscriptionCallback = (field: Input) => void;
 
@@ -64,16 +70,15 @@ export interface FormSubscription {
   callback: FormSubscriptionCallback
 }
 
-export interface FieldHandler {
+export interface InputHandlers {
   onChange(value: any): void,
   onBlur(): void,
-  onFocus(): void,
-  subscribe(callback: FieldSubscriptionCallback, options?: FieldSubscriptionOptions): void,
+  onFocus(): void
 }
 
 export interface FieldMeta extends Omit<FieldState, 'value' | 'previousState'> { }
 
-export interface Input extends FieldHandler {
+export interface Input extends InputHandlers {
   meta: FieldMeta,
   disabled: boolean,
   value: any
@@ -89,3 +94,4 @@ export type ValidatorFunction = (fieldState: FieldState, formValues: any, params
 export interface ValidatorSource {
   [name: string]: ValidatorFunction,
 }
+

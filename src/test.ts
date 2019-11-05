@@ -1,9 +1,9 @@
 import Formera from "./Formera";
 
 const initialValues = {
-  name: 'Cleveland',
-  lastName: 'O Reilly',
-  gender: 'Masculino',
+  name: 'NameTest',
+  lastName: 'LastNameTest',
+  gender: 'Male',
   typeId: 1,
   address: [
     {
@@ -14,15 +14,15 @@ const initialValues = {
     },
     {
       zipCode: '170442',
-      city: 'Cambuquira',
-      street: 'Rua Ordomundi Gomes Ferreira',
-      numer: '890'
+      city: 'Nova York',
+      street: 'Test street',
+      numer: '500'
     }
   ],
   phones: [
     {
       description: 'Telefone 1',
-      phone: '(35) 984262379'
+      phone: '(99) 999999999'
     },
     {
       description: 'Telefone 2',
@@ -35,23 +35,23 @@ const form = new Formera(
   {
     initialValues,
     debug: true,
-    onSubmit: (test) => {}
+    onSubmit: (values) => {
+      console.log('submiting values :', values);
+    }
   }
 );
 
-const nameHandler = form.registerField('name', { validators: ['required']});
+const nameHandler = form.registerField('name', { validators: ['required'] });
 
-nameHandler.subscribe((fieldstate) => {
-  console.log('Runing subscribe.')
+form.fieldSubscribe('name', (fieldstate) => {
+  console.log('Runing subscribe.', fieldstate);
 }, { value: true });
 
 
 nameHandler.onFocus();
 
-nameHandler.onChange(`jamantex`);
+nameHandler.onChange(`changing value`);
 
 nameHandler.onBlur();
-
-// console.log('Formstate', JSON.stringify(form.getState(), null, 2));
 
 
