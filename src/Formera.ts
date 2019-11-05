@@ -67,14 +67,16 @@ export default class Formera {
   }
 
   /**Register the field. */
-  public registerField(name: string, options?: FieldRegisterOptions): Input {
+  public registerField(name: string, options: FieldRegisterOptions = {}): Input {
     this.initDebug('REGISTER', name);
 
     options = {
-      ...defaultFieldRegisterOptions,
-      validationType: this.options.validationType,
-      ...options
+      validators: options.validators,
+      validationType: options.validationType || this.options.validationType,
+      stopValidationOnFirstError: options.stopValidationOnFirstError || defaultFieldRegisterOptions.stopValidationOnFirstError
     };
+
+    this.log('FORM OPTIONS', options);
 
     this.fieldEntries[name] = { options };
 
