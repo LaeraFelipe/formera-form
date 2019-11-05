@@ -92,6 +92,9 @@ export default class Formera {
       onFocus: () => this.focus(name)
     }
 
+    this.log('FIELD ENTRIE', this.fieldEntries[name]);
+    this.log('FIELD STATE', this.fieldStates[name]);
+
     this.endDebug();
 
     return this.getField(name);
@@ -179,6 +182,8 @@ export default class Formera {
   /**Do the field validation. */
   public async validateField(field: string, notifySubscribers: boolean = true): Promise<void> {
     const { validators, stopValidationOnFirstError } = this.fieldEntries[field].options;
+
+    this.log('VALIDATORS', validators)
 
     if (validators && validators.length) {
       const fieldState = this.fieldStates[field];
