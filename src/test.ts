@@ -1,4 +1,6 @@
 import Formera from "./Formera";
+import clone from './utils/clone';
+import set from './utils/set';
 
 const initialValues = {
   name: 'NameTest',
@@ -31,27 +33,34 @@ const initialValues = {
   ]
 }
 
-const form = new Formera(
-  {
-    initialValues,
-    debug: true,
-    onSubmit: (values) => {
-      console.log('submiting values :', values);
-    }
-  }
-);
+set(initialValues,'gender', 'jamanta');
 
-const nameHandler = form.registerField('name', { validators: ['required'] });
+console.log('initialValues :', initialValues);
 
-form.fieldSubscribe('name', (fieldstate) => {
-  console.log('Runing subscribe.', fieldstate);
-}, { value: true });
+// console.log('clone :', clone);
 
 
-nameHandler.onFocus();
+// const form = new Formera(
+//   {
+//     initialValues,
+//     debug: true,
+//     onSubmit: (values) => {
+//       console.log('submiting values :', values);
+//     }
+//   }
+// );
 
-nameHandler.onChange(`changing value`);
+// const nameHandler = form.registerField('name', { validators: ['required'] });
 
-nameHandler.onBlur();
+// form.fieldSubscribe('name', (fieldstate) => {
+//   console.log('Runing subscribe.', fieldstate);
+// }, { value: true });
+
+
+// nameHandler.onFocus();
+
+// nameHandler.onChange(`changing value`);
+
+// nameHandler.onBlur();
 
 
