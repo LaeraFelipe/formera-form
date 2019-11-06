@@ -1,32 +1,47 @@
+type ArrayValues = { arrayPath: string[], value: any }[];
+
+/**Separates the path in parts. */
+function pathToArray(path: string): string[] {
+  return path.split(/\[.\[\]]/);
+}
+
+/**Return if a level is an array. */
+function isLevelArray(values: ArrayValues, level: number): boolean {
+  return values.some(item => !isNaN(+item.arrayPath[level]));
+}
 
 /**Set value in object recursivaly. */
-function setRecursivaly(object: any, path: string[], index: number, value: any) {
-  if (!object) return;
+function setRecursivaly(object: any, values: ArrayValues, level = 0) {
+  const valuesInLevel = values.filter(value => value.arrayPath[level]);
 
-  const isLastKey = index == path.length;
+  const isArray = isLevelArray(valuesInLevel, level);
 
-  const key = path[index];
+  let result = isArray ? [] : {};
 
-  //Its an object.
-  if (isNaN(+key)) {
-    if (isLastKey) {
-      object[key] = value;
-    } else {
-      setRecursivaly(object[key], path, index + 1, value);
+  if (isArray) {
+    for (const valueInLevel of valuesInLevel) {
+      const isLastKey = level === (valueInLevel.arrayPath.length - 1);
+      const currentKey = valueInLevel.arrayPath[level];
+
+      if (isLastKey) {
+        object[currentKey] = valueInLevel.value;
+      }
     }
-  }
-  //Its an array.
-  else {
-    const numericKey = +key;
-    if (isLastKey) {
-      object[numericKey] = value;
-    } else {
-      setRecursivaly(object[numericKey], path, index + 1, value);
+  } else {
+    for (const valueInLevel of valuesInLevel) {
+      const isLastKey = level === (valueInLevel.arrayPath.length - 1);
+      const currentKey = valueInLevel.arrayPath[level];
     }
   }
 }
 
 /**Set value in object. */
-export default function set(object: any, path: string, value: any) {
-  setRecursivaly(object, path.split(/\[.\[\]]/), 0, value);
+export default function set(object: any, values: { [key: string]: any }, level: number = 0) {
+  let mappedValues: ArrayValues = [];
+
+  //Mapping the values to change.
+  Object.keys(values)
+    .forEach(key => mappedValues.push({ arrayPath: pathToArray(key), value: values[key] }));
+
+  return setRecursivaly(object, mappedValues);
 }
