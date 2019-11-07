@@ -1,4 +1,10 @@
+import clone from './clone';
+
 type ArrayValues = { arrayPath: string[], value: any }[];
+
+type LevelChange = { isLastKey: boolean, key: string, value: any };
+
+type LevelInfo = { isArray: boolean, levelChanges: { [key: string]: LevelChange } };
 
 /**Separates the path in parts. */
 function pathToArray(path: string): string[] {
@@ -40,6 +46,8 @@ function setRecursivaly(current: any, changes: ArrayValues, level = 0) {
       }
       changeIndex++;
     }
+
+
   } else {
     if (current !== undefined) {
       result = { ...current };
