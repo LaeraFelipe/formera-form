@@ -1,6 +1,7 @@
 import Formera from "./Formera";
 import clone from './utils/clone';
 import set from './utils/set';
+import finforSet from './utils/finfor';
 
 const initialValues = {
   name: 'NameTest',
@@ -33,34 +34,14 @@ const initialValues = {
   ]
 }
 
-set(initialValues,'gender', 'jamanta');
+console.time('meu')
+const result = set(initialValues, { 'teste_jam': 1, 'teste[8]': 'teste' });
+console.timeEnd('meu')
 
-console.log('initialValues :', initialValues);
+console.time('finfor')
+let resultfinfo = finforSet(initialValues, 'teste_jam', 1);
+ resultfinfo = finforSet(initialValues, 'teste[8]', 'teste');
+console.timeEnd('finfor')
 
-// console.log('clone :', clone);
-
-
-// const form = new Formera(
-//   {
-//     initialValues,
-//     debug: true,
-//     onSubmit: (values) => {
-//       console.log('submiting values :', values);
-//     }
-//   }
-// );
-
-// const nameHandler = form.registerField('name', { validators: ['required'] });
-
-// form.fieldSubscribe('name', (fieldstate) => {
-//   console.log('Runing subscribe.', fieldstate);
-// }, { value: true });
-
-
-// nameHandler.onFocus();
-
-// nameHandler.onChange(`changing value`);
-
-// nameHandler.onBlur();
-
+// console.log('initialValues :', result);
 

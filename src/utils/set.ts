@@ -2,37 +2,70 @@ type ArrayValues = { arrayPath: string[], value: any }[];
 
 /**Separates the path in parts. */
 function pathToArray(path: string): string[] {
-  return path.split(/\[.\[\]]/);
+  return path.split(/[.[\]]+/).filter(Boolean);
 }
 
 /**Return if a level is an array. */
 function isLevelArray(values: ArrayValues, level: number): boolean {
-  return values.some(item => !isNaN(+item.arrayPath[level]));
+  return values.some(item => item.arrayPath[level] && !isNaN(+item.arrayPath[level]));
 }
 
 /**Set value in object recursivaly. */
-function setRecursivaly(object: any, values: ArrayValues, level = 0) {
-  const valuesInLevel = values.filter(value => value.arrayPath[level]);
+function setRecursivaly(current: any, changes: ArrayValues, level = 0) {
+  const isArray = isLevelArray(changes, level);
 
-  const isArray = isLevelArray(valuesInLevel, level);
-
-  let result = isArray ? [] : {};
+  let result = undefined;
 
   if (isArray) {
-    for (const valueInLevel of valuesInLevel) {
-      const isLastKey = level === (valueInLevel.arrayPath.length - 1);
-      const currentKey = valueInLevel.arrayPath[level];
+    if (current !== undefined && Array.isArray(current)) {
+      result = [...current];
+    } else {
+      result = [];
+    }
 
-      if (isLastKey) {
-        object[currentKey] = valueInLevel.value;
+    let changeIndex = 0;
+    for (const change of changes) {
+      const { arrayPath, value } = change;
+
+      if (!arrayPath[level]) continue;
+
+      const numericKey = +arrayPath[level];
+      const isLastPath = level === (arrayPath.length - 1);
+
+      if (isLastPath) {
+        result[numericKey] = value;
+        changes.splice(changeIndex, 1);
+      } else {
+        result[numericKey] = setRecursivaly(result[numericKey], changes, level + 1);
       }
+      changeIndex++;
     }
   } else {
-    for (const valueInLevel of valuesInLevel) {
-      const isLastKey = level === (valueInLevel.arrayPath.length - 1);
-      const currentKey = valueInLevel.arrayPath[level];
+    if (current !== undefined) {
+      result = { ...current };
+    } else {
+      result = {};
+    }
+
+    let changeIndex = 0;
+    for (const change of changes) {
+      const { arrayPath, value } = change;
+
+      if (!arrayPath[level]) continue;
+
+      const key = arrayPath[level];
+      const isLastPath = level === (arrayPath.length - 1);
+
+      if (isLastPath) {
+        result[key] = value;
+        changes.splice(changeIndex, 1);
+      } else {
+        result[key] = setRecursivaly(result[key], changes, level + 1);
+      }
+      changeIndex++;
     }
   }
+  return result;
 }
 
 /**Set value in object. */
