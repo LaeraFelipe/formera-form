@@ -7,13 +7,12 @@
   "scripts": {
     "build": "tsc",
     "test": "nodemon dist/test.js",
+    "testset": "nodemon dist/utlils/set.js",
     "prepublish": "tsc"
   },
   "author": "Felipe Laera",
   "license": "ISC",
-  "dependencies": {
-    "lodash": "^4.17.15"
-  },
+  "dependencies": {},
   "devDependencies": {
     "@types/lodash": "^4.14.144",
     "nodemon": "^1.19.4"
