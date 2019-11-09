@@ -1,7 +1,7 @@
 import isEqual from "./isEqual";
 
 /**Get state changes. */
-export default function getStateChanges(state: any): Array<string> {
+export function getStateChanges(state: any): Array<string> {
 	const { previousState } = state;
 
 	let changes = [];

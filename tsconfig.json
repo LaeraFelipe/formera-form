@@ -3,9 +3,9 @@
     "target": "es5",
     "module": "commonjs",
     "outDir": "dist",
-    "declaration": true,
     "lib": ["es2015", "dom"],
-    "sourceMap": true
+    "sourceMap": true,
+    "declaration": true
   },
   "include": ["src"],
   "exclude": [

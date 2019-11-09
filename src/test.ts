@@ -2,7 +2,6 @@
 
 import * as _ from 'lodash';
 import { isEqual } from './utils';
-console.log('isEqual', isEqual)
 
 const initialValues = {
   name: 'NameTest',
@@ -66,13 +65,15 @@ const otherValues = {
   ]
 }
 
-console.time('tes')
-console.log(isEqual(initialValues, otherValues));
-console.timeEnd('tes')
 
-console.time('LOD')
-console.log(_.isEqual(initialValues, otherValues));
-console.timeEnd('LOD')
+console.time('deepIsEqual')
+isEqual(initialValues, otherValues);
+console.timeEnd('deepIsEqual')
+
+
+console.time('ldo')
+_.isEqual(initialValues, otherValues);
+console.timeEnd('ldo')
 
 
 

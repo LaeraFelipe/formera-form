@@ -7,12 +7,10 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "nodemon",
-      "runtimeExecutable": "nodemon",
-      "program": "${workspaceFolder}/dist/test.js",
-      "restart": false,
-      "console": "integratedTerminal",
-      "internalConsoleOptions": "neverOpen"
+      "name": "Launch Program",
+      "program": "${workspaceFolder}/src/test.ts",
+      "preLaunchTask": "tsc: build - tsconfig.json",
+      "outFiles": ["${workspaceFolder}/dist/**/*.js"]
     }
   ]
 }

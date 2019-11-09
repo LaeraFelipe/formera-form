@@ -5,6 +5,8 @@ function isObject(value: any): boolean {
 
 /**Compare arrays. */
 function isArrayEqual(value: Array<any>, other: Array<any>): boolean {
+  if (value.length !== other.length) return false;
+
   const maxLength = Math.max(value.length, other.length);
 
   for (let index = 0; index < maxLength; index++) {
@@ -19,8 +21,11 @@ function isArrayEqual(value: Array<any>, other: Array<any>): boolean {
 /**Compare objects. */
 function isObjectEqual(value: any, other: any): boolean {
   let keys = Object.keys(value);
+  let otherKeys = Object.keys(value);
 
-  Object.keys((otherKey: string) => keys.indexOf(otherKey) === -1 && keys.push(otherKey));
+  if (keys.length !== otherKeys.length) return false;
+
+  keys.forEach(otherKey => keys.indexOf(otherKey) === -1 && keys.push(otherKey));
 
   for (const key of keys) {
     if (!isEqual(value[key], other[key])) {
@@ -32,41 +37,38 @@ function isObjectEqual(value: any, other: any): boolean {
 }
 
 /**Return if two values is equals. */
-export default function isEqual(value: any, other: any): boolean {
-  return JSON.stringify(value) === JSON.stringify(other);
+export default function isEqual(value: any, other: any) {
+  if (value === other) {
+    return true;
+  }
+
+  if (value == null || other == null || (!isObject(value) && !isObject(other))) {
+    return false;
+  }
+
+  if (value.toString() !== other.toString()) return false;
+
+  const valueIsArray = Array.isArray(value);
+  const otherIsArray = Array.isArray(other);
+
+  if (valueIsArray !== otherIsArray) {
+    return false;
+  }
+
+  //Compare arrays.
+  if (valueIsArray && otherIsArray) {
+    if (!isArrayEqual(value, other)) {
+      return false;
+    }
+  }
+  //Compare objects.
+  else {
+    if (!isObjectEqual(value, other)) {
+      return false;
+    }
+  }
+
+  return true;
 }
-
-// export default function isEqual(value: any, other: any) {
-//   if (value === other) {
-//     return true;
-//   }
-
-//   if (value == null || other == null || (!isObject(value) && !isObject(other))) {
-//     return false;
-//   }
-
-//   const valueIsArray = Array.isArray(value);
-//   const otherIsArray = Array.isArray(other);
-
-//   if (valueIsArray !== otherIsArray) {
-//     return false;
-//   }
-
-//   //Compare arrays.
-//   if (valueIsArray && otherIsArray) {
-//     console.log('Comparando arrays')
-//     if (!isArrayEqual(value, other)) {
-//       return false;
-//     }
-//   }
-//   //Compare objects.
-//   else {
-//     console.log('Comparando object')
-//     if (!isObjectEqual(value, other)) {
-//       return false;
-//     }
-//   }
-//   return true;
-// }
 
 
