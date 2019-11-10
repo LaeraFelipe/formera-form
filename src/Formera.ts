@@ -85,6 +85,11 @@ export default class Formera {
       onFocus: () => this.focus(name)
     }
 
+    //Doing the first validation in field.
+    if (options.validators && options.validators.length) {
+      this.validateField(name);
+    }
+
     this.log('FIELD ENTRIE', this.state.fieldEntries[name]);
     this.log('FIELD STATE', this.state.fieldStates[name]);
 
