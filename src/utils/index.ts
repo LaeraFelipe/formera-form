@@ -1,18 +1,16 @@
 import clone from './clone';
 import get from './get';
-import { getStateChanges } from './state';
 import isEqual from './isEqual';
 import pathToArray from './pathToArray';
+import getChangeValue from './getChangeValue';
 import set from './set';
-
-function getChangeValue(value: any) {
-
-}
+import { setState, cloneState } from './state';
 
 export {
 	clone,
 	get,
-	getStateChanges,
+	cloneState,
+	setState,
 	getChangeValue,
 	isEqual,
 	pathToArray,

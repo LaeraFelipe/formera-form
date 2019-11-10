@@ -2,6 +2,7 @@ import { FormState, FieldState, FormSubscriptionOptions, FieldSubscriptionOption
 
 export const defaultFormState: FormState = {
   active: false,
+  disabled: false,
   touched: false,
   dirty: false,
   pristine: true,
@@ -15,7 +16,6 @@ export const defaultFormState: FormState = {
 }
 
 export const defaultFieldState: FieldState = {
-  submitting: false,
   active: false,
   touched: false,
   dirty: false,
@@ -23,7 +23,7 @@ export const defaultFieldState: FieldState = {
   validating: false,
   valid: true,
   disabled: false,
-  initialValue: null,
+  initial: null,
   value: '',
   error: null,
   errors: {},
@@ -41,8 +41,7 @@ export const defaultFieldSubscriptionOptions: FieldSubscriptionOptions = {
   error: true,
   errors: true,
   value: true,
-  initialValue: false,
-  submitting: false,
+  initial: false,
   data: false
 }
 

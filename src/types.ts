@@ -1,7 +1,44 @@
+export interface State<T> {
+  active: boolean,
+  touched: boolean,
+  pristine: boolean,
+  dirty: boolean,
+  valid: boolean,
+  validating: boolean,
+  disabled: boolean,
+  previousState: Omit<T, 'previousState'>,
+}
+
+export interface FormState extends State<FormState> {
+  submitting: boolean,
+  initialValues: any,
+  values: any,
+  errors?: { [field: string]: string },
+}
+
+export interface FieldState extends State<FieldState> {
+  initial: any,
+  value: any,
+  error?: string,
+  data?: any,
+  errors?: { [validator: string]: string },
+}
+
+export interface InternalState {
+  options: FormOptions,
+  formState: FormState,
+  fieldStates: { [field: string]: FieldState },
+  fieldEntries: { [field: string]: FieldEntrie },
+  fieldSubscriptions: { [field: string]: FieldSubscription[] },
+  formSubscriptions: FormSubscription[],
+  validators: ValidationFunctionSource
+}
+
 export interface FormOptions {
   initialValues: any,
   onSubmit: (values: any) => any,
-  customValidators?: ValidatorSource,
+  customValidators?: ValidationFunctionSource,
+  customValidationMessages?: ValidationMessageSource,
   validationType?: 'onChange' | 'onBlur',
   debug?: boolean
 }
@@ -12,8 +49,7 @@ export interface FieldRegisterOptions {
   stopValidationOnFirstError?: boolean,
 }
 
-export interface FieldEntrie {
-  options: FieldRegisterOptions,
+export interface FieldEntrie extends FieldRegisterOptions {
   handler?: InputHandlers,
 }
 
@@ -29,23 +65,6 @@ export interface CommonState {
   valid: boolean,
   validating: boolean,
   submitting: boolean,
-}
-
-export interface FormState extends CommonState {
-  initialValues: any,
-  values: any,
-  previousState: Omit<FormState, 'previousState'>,
-  errors?: { [field: string]: string },
-}
-
-export interface FieldState extends CommonState {
-  disabled: boolean,
-  initialValue: any,
-  value: any,
-  previousState: Omit<FieldState, 'previousState'>,
-  error?: string,
-  data?: any,
-  errors?: { [validator: string]: string },
 }
 
 export type FormSubscriptionOptions = {
@@ -89,9 +108,13 @@ export interface FieldValidator {
   params?: []
 }
 
-export type ValidatorFunction = (fieldState: FieldState, formValues: any, params: any) => string | Promise<string>;
+export type ValidatorFunction = (fieldState: FieldState, formValues: any, params?: any) => string | Promise<string>;
 
-export interface ValidatorSource {
+export interface ValidationFunctionSource {
   [name: string]: ValidatorFunction,
+}
+
+export interface ValidationMessageSource {
+  [name: string]: string,
 }
 
