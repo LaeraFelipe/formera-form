@@ -85,7 +85,7 @@ export default class Formera {
 
     this.endDebug();
 
-    return this.getField(name);
+    return this.getInput(name);
   }
 
   /**Unregister the field. */
@@ -266,7 +266,7 @@ export default class Formera {
 
       for (const fieldSubscription of fieldSubscriptions[field]) {
         if (fieldChanges.some(change => fieldSubscription.options[change])) {
-          fieldSubscription.callback(this.getField(field));
+          fieldSubscription.callback(this.getInput(field));
         }
       }
     }
@@ -286,12 +286,13 @@ export default class Formera {
   }
 
   /**Returns a field to manipulate and extract data. */
-  private getField(field: string): Input {
+  private getInput(field: string): Input {
     const { fieldEntries, fieldStates } = this.state;
     const fieldState = fieldStates[field];
     const fieldHandler = fieldEntries[field].handler;
     return {
       ...fieldHandler,
+      name: field,
       value: fieldState.value,
       disabled: fieldState.disabled,
       meta: {

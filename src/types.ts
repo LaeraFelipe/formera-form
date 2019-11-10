@@ -98,6 +98,7 @@ export interface InputHandlers {
 export interface FieldMeta extends Omit<FieldState, 'value' | 'previousState'> { }
 
 export interface Input extends InputHandlers {
+  name: string,
   meta: FieldMeta,
   disabled: boolean,
   value: any
