@@ -10,6 +10,11 @@ export default class Formera {
   /**Internal form state. */
   private state: InternalState;
 
+  /**Return if a form is in debug mode. */
+  get debug() {
+    return this.state.options.debug
+  }
+
   /**Initialize a form. */
   constructor(options: FormOptions) {
     this.state = {} as InternalState;
@@ -73,7 +78,7 @@ export default class Formera {
     }
 
     this.state.fieldSubscriptions[name] = [];
-    
+
     this.state.fieldEntries[name].handler = {
       onChange: (value: any) => this.change(name, value),
       onBlur: () => this.blur(name),
