@@ -7,8 +7,7 @@
   "scripts": {
     "build": "tsc",
     "test": "jest",
-    "testset": "nodemon dist/utlils/set.js",
-    "prepublish": "tsc"
+    "prepublish": "tsc && npx jest"
   },
   "author": "Felipe Laera",
   "license": "ISC",
