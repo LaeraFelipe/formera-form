@@ -227,7 +227,7 @@ export default class Formera {
         }
       }
 
-      setState<FieldState>(fieldState, { validating: false, valid: !error, errors });
+      setState<FieldState>(fieldState, { validating: false, valid: !error, errors, error });
 
       setState<FormState>(formState, {
         validating: false,
