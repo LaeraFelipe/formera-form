@@ -1,6 +1,6 @@
 import initializeValidators from './validation';
 import { defaultFormState, defaultFieldState, defaultFieldSubscriptionOptions, defaultFormSubscriptionOptions, defaultFieldRegisterOptions, defaultFormOptions } from "./defaultValues";
-import { getChangedValue, clone, cloneState, get, setState, isEqual } from "./utils";
+import { getChangedValue, clone, cloneState, get, setState, isEqual, merge } from "./utils";
 import { FormState, FormOptions, FieldSubscriptionOptions, FormSubscriptionCallback, FieldSubscriptionCallback, FormSubscriptionOptions, FieldRegisterOptions, Input, FieldState, InternalState } from "./types";
 
 /**Timer identifier to log. */
@@ -19,7 +19,7 @@ export default class Formera {
   constructor(options: FormOptions) {
     this.state = {} as InternalState;
 
-    this.state.options = { ...defaultFormOptions, ...options };
+    this.state.options = merge(defaultFormOptions, options);
 
     this.initDebug('INIT');
 

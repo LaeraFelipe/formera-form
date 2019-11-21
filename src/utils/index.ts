@@ -4,6 +4,7 @@ import isEqual from './isEqual';
 import pathToArray from './pathToArray';
 import getChangedValue from './getChangedValue';
 import set from './set';
+import merge from './merge';
 import { setState, cloneState } from './state';
 
 export {
@@ -14,5 +15,6 @@ export {
 	getChangedValue,
 	isEqual,
 	pathToArray,
-	set
+	set,
+	merge
 }
