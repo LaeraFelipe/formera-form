@@ -1,7 +1,7 @@
 import initializeValidators from './validation';
 import { defaultFormState, defaultFieldState, defaultFieldSubscriptionOptions, defaultFormSubscriptionOptions, defaultFieldRegisterOptions, defaultFormOptions } from "./defaultValues";
 import { getChangedValue, clone, cloneState, get, setState, isEqual, merge } from "./utils";
-import { FormState, FormOptions, FieldSubscriptionOptions, FormSubscriptionCallback, FieldSubscriptionCallback, FormSubscriptionOptions, FieldRegisterOptions, Input, FieldState, InternalState, FieldHandler } from "./types";
+import { FormState, FormOptions, FieldSubscriptionOptions, FormSubscriptionCallback, FieldSubscriptionCallback, FormSubscriptionOptions, FieldRegisterOptions, FieldState, InternalState, FieldHandler } from "./types";
 
 /**Timer identifier to log. */
 const EXECUTION_TIMER_IDENTIFIER = '[FORMERA] EXECUTION TIME: ';

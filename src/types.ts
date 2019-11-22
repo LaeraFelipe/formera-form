@@ -96,14 +96,6 @@ export interface FieldHandler {
   onFocus(): void
 }
 
-export interface FieldMeta extends Omit<FieldState, 'value' | 'previousState'> { }
-
-export interface Input extends FieldHandler {
-  name: string,
-  meta: FieldMeta,
-  disabled: boolean,
-  value: any
-}
 
 export interface FieldValidator {
   name: string,
