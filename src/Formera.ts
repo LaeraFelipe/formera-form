@@ -134,7 +134,11 @@ export default class Formera {
 
     const previousValue = get(formState.previousState.values, field);
 
-    const fieldChanges = setState<FieldState>(fieldState, { pristine: isEqual(previousValue, value) });
+    const valueChanged = isEqual(previousValue, value);
+
+    let fieldChanges = setState<FieldState>(fieldState, { pristine: valueChanged });
+
+    if (valueChanged) fieldChanges.push('value');
 
     const formChanges = setState<FormState>(formState, {
       [`values.${field}`]: value,
@@ -242,19 +246,23 @@ export default class Formera {
 
   /**Submmit the form. */
   public async submit() {
-    const { options, formState } = this.state;
+    const { options, formState, fieldStates } = this.state;
+    const { onSubmit } = options;
 
-    const { onSubmit } = this.state.options;
+    //Setting all fields touched.
+    for (const field in fieldStates) {
+      setState<FieldState>(fieldStates[field], { touched: true });
+    }
 
-    const formChanges = setState<FormState>(formState, { submitting: true });
+    setState<FormState>(formState, { submitting: true });
 
-    this.notifySubscribers(formChanges);
+    this.notifyAllSubscribers();
 
     await onSubmit(formState.values);
 
-    const afterformChanges = setState<FormState>(formState, { submitting: false });
+    setState<FormState>(formState, { submitting: false });
 
-    this.notifySubscribers(afterformChanges);
+    this.notifyAllSubscribers();
   }
 
   /**Subscribe to field. */
@@ -267,34 +275,8 @@ export default class Formera {
     this.state.formSubscriptions.push({ callback, options });
   }
 
-  /**Notify all subscribers. */
-  private notifySubscribers(formChanges: string[], field?: string, fieldChanges?: string[]) {
-    const { fieldSubscriptions, formState, formSubscriptions } = this.state;
-
-    if (field) {
-      this.log('FIELD CHANGES: ', fieldChanges);
-
-      for (const fieldSubscription of fieldSubscriptions[field]) {
-        if (fieldChanges.some(change => fieldSubscription.options[change])) {
-          fieldSubscription.callback(this.getFieldState(field));
-        }
-      }
-
-      //Notifying nested fields.
-      
-    }
-
-    this.log('FORM CHANGES: ', formChanges);
-
-    for (const formSubscription of formSubscriptions) {
-      if (formChanges.some(change => formSubscription.options[change])) {
-        formSubscription.callback(formState);
-      }
-    }
-  }
-
   /**Return the builded field state with current and initial value. */
-  private getFieldState(field: string): FieldState {
+  public getFieldState(field: string): FieldState {
     const { fieldStates, formState } = this.state;
 
     const fieldState = fieldStates[field];
@@ -310,6 +292,52 @@ export default class Formera {
   /**Return form state. */
   public getState() {
     return this.state.formState;
+  }
+
+  /**Notify all subscribers. */
+  private notifySubscribers(formChanges: string[], field?: string, fieldChanges?: string[]) {
+    const { fieldSubscriptions, formState, formSubscriptions, fieldEntries } = this.state;
+
+    if (field) {
+      this.log('FIELD CHANGES: ', fieldChanges);
+
+      for (const fieldSubscription of fieldSubscriptions[field]) {
+        if (fieldChanges.some(change => fieldSubscription.options[change])) {
+          fieldSubscription.callback(this.getFieldState(field));
+        }
+      }
+
+      //Notifying nested fields.
+      for (const nestedField in fieldEntries) {
+        if (nestedField.startsWith(field)) {
+          const nestedFieldSubscriptions = fieldSubscriptions[nestedField];
+          nestedFieldSubscriptions
+            .forEach(subscription => subscription.callback(this.getFieldState(nestedField)));
+        }
+      }
+    }
+
+    this.log('FORM CHANGES: ', formChanges);
+
+    for (const formSubscription of formSubscriptions) {
+      if (formChanges.some(change => formSubscription.options[change])) {
+        formSubscription.callback(formState);
+      }
+    }
+  }
+
+  /**Notify all subscribes of all fields. */
+  private notifyAllSubscribers() {
+    const { fieldEntries, formState, formSubscriptions, fieldSubscriptions } = this.state;
+
+    //Notifying form subscribers.
+    formSubscriptions.forEach(subscription => subscription.callback(formState));
+
+    //Notifying field subscribers.
+    for (const field in fieldEntries) {
+      fieldSubscriptions[field]
+        .forEach(subscription => subscription.callback(this.getFieldState(field)));
+    }
   }
 
   /**Log messages. */

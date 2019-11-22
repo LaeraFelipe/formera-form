@@ -36,4 +36,13 @@ describe('formera base tests', () => {
       expect(valid).toBe(true);
     }, { valid: true });
   });
+
+  it('testing submit', () => {
+    formeraInstance.submit()
+    .then(() => {
+     expect(formeraInstance.getFieldState('first').touched).toBe(true);
+     expect(formeraInstance.getFieldState('second').touched).toBe(true);
+     expect(formeraInstance.getFieldState('third').touched).toBe(true);
+    })
+  })
 })
