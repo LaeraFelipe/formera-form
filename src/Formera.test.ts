@@ -9,32 +9,31 @@ const formeraInstance = new Formera({
 
 describe('formera base tests', () => {
   it('testing subscriptions', () => {
-    const input = formeraInstance.registerField('first');
+    const firstHandler = formeraInstance.registerField('first');
 
-    formeraInstance.fieldSubscribe(input.name, ({ value, meta }) => {
+    formeraInstance.fieldSubscribe('first', ({ value, pristine }) => {
       expect(value).toBe('changedValue');
-      expect(meta.pristine).toBe(false);
+      expect(pristine).toBe(false);
     });
-
 
     formeraInstance.formSubscribe(({ values }) => {
       expect(values).toStrictEqual({ first: 'changedValue', third: 'Initial value' });
     })
 
-    input.onChange('changedValue');
+    firstHandler.onChange('changedValue');
   });
 
   it('testing validators', () => {
-    const secondInput = formeraInstance.registerField('second', { validators: ['required'] });
+    const secondHandler = formeraInstance.registerField('second', { validators: ['required'] });
 
-    formeraInstance.fieldSubscribe(secondInput.name, ({ meta }) => {
-      expect(meta.valid).toBe(false);
+    formeraInstance.fieldSubscribe('second', ({ valid }) => {
+      expect(valid).toBe(false);
     }, { valid: true });
 
-    const thirdInput = formeraInstance.registerField('third', { validators: ['required'] });
+    const thirdhandler = formeraInstance.registerField('third', { validators: ['required'] });
 
-    formeraInstance.fieldSubscribe(thirdInput.name, ({ meta }) => {
-      expect(meta.valid).toBe(true);
+    formeraInstance.fieldSubscribe('third', ({ valid }) => {
+      expect(valid).toBe(true);
     }, { valid: true });
   });
 })

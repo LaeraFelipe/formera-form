@@ -50,7 +50,7 @@ export interface FieldRegisterOptions {
 }
 
 export interface FieldEntrie extends FieldRegisterOptions {
-  handler?: InputHandlers,
+  handler?: FieldHandler,
 }
 
 export type FieldEntries = {
@@ -75,7 +75,7 @@ export type FieldSubscriptionOptions = {
   [P in keyof Partial<Omit<FieldState, 'previousState'>>]: boolean
 };
 
-export type FieldSubscriptionCallback = (field: Input) => void;
+export type FieldSubscriptionCallback = (field: FieldState) => void;
 
 export type FormSubscriptionCallback = (formState: FormState) => void;
 
@@ -89,7 +89,8 @@ export interface FormSubscription {
   callback: FormSubscriptionCallback
 }
 
-export interface InputHandlers {
+export interface FieldHandler {
+  subscribe(callback: FieldSubscriptionCallback): void,
   onChange(value: any): void,
   onBlur(): void,
   onFocus(): void
@@ -97,7 +98,7 @@ export interface InputHandlers {
 
 export interface FieldMeta extends Omit<FieldState, 'value' | 'previousState'> { }
 
-export interface Input extends InputHandlers {
+export interface Input extends FieldHandler {
   name: string,
   meta: FieldMeta,
   disabled: boolean,

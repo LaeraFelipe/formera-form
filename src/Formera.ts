@@ -1,7 +1,7 @@
 import initializeValidators from './validation';
 import { defaultFormState, defaultFieldState, defaultFieldSubscriptionOptions, defaultFormSubscriptionOptions, defaultFieldRegisterOptions, defaultFormOptions } from "./defaultValues";
 import { getChangedValue, clone, cloneState, get, setState, isEqual, merge } from "./utils";
-import { FormState, FormOptions, FieldSubscriptionOptions, FormSubscriptionCallback, FieldSubscriptionCallback, FormSubscriptionOptions, FieldRegisterOptions, Input, FieldState, InternalState } from "./types";
+import { FormState, FormOptions, FieldSubscriptionOptions, FormSubscriptionCallback, FieldSubscriptionCallback, FormSubscriptionOptions, FieldRegisterOptions, Input, FieldState, InternalState, FieldHandler } from "./types";
 
 /**Timer identifier to log. */
 const EXECUTION_TIMER_IDENTIFIER = '[FORMERA] EXECUTION TIME: ';
@@ -57,7 +57,7 @@ export default class Formera {
   }
 
   /**Register the field. */
-  public registerField(name: string, options: FieldRegisterOptions = {}): Input {
+  public registerField(name: string, options: FieldRegisterOptions = {}): FieldHandler {
     this.initDebug('REGISTER', name);
 
     const { formState, options: formOptions } = this.state;
@@ -82,6 +82,7 @@ export default class Formera {
     this.state.fieldSubscriptions[name] = [];
 
     this.state.fieldEntries[name].handler = {
+      subscribe: (callback: FieldSubscriptionCallback) => this.fieldSubscribe(name, callback),
       onChange: (value: any) => this.change(name, value),
       onBlur: () => this.blur(name),
       onFocus: () => this.focus(name)
@@ -97,7 +98,7 @@ export default class Formera {
 
     this.endDebug();
 
-    return this.getInput(name);
+    return this.state.fieldEntries[name].handler;
   }
 
   /**Unregister the field. */
@@ -123,25 +124,22 @@ export default class Formera {
   }
 
   /**Do the change actions in a field state. */
-  public change(field: string, incommingValue: any): void {
+  public change(field: string, value: any): void {
     this.initDebug('CHANGE', field);
 
     const { fieldEntries, fieldStates, formState } = this.state;
 
-    const value = getChangedValue(incommingValue);
-
     const fieldEntrie = fieldEntries[field];
     let fieldState = fieldStates[field];
 
-    const fieldChanges = setState<FieldState>(fieldState, {
-      value: value,
-      pristine: isEqual(fieldState.initial, value)
-    });
+    const previousValue = get(formState.previousState.values, field);
+
+    const fieldChanges = setState<FieldState>(fieldState, { pristine: isEqual(previousValue, value) });
 
     const formChanges = setState<FormState>(formState, {
       [`values.${field}`]: value,
       pristine: !fieldState.pristine ? fieldState.pristine : isEqual(formState.initialValues, formState.values)
-    })
+    });
 
     this.endDebug();
 
@@ -214,7 +212,8 @@ export default class Formera {
 
         try {
           if (typeof validator === 'string') {
-            const currentError = await validatorsFunctions[validatorName](fieldState, formState.values, validatorParams);
+            const currentError =
+              await validatorsFunctions[validatorName](this.getFieldState(field), formState.values, validatorParams);
 
             errors[validator] = currentError;
 
@@ -235,25 +234,10 @@ export default class Formera {
         validating: false,
         valid: error ? false : !Object.keys(fieldStates).some(key => !fieldStates[key].valid),
         [`errors.${field}`]: { ...errors }
-      }
-      );
+      });
 
       if (notifySubscribers) this.notifySubscribers(formChanges, field, fieldChanges);
     }
-  }
-
-  /**Return the builded field state. */
-  public getFieldState(field: string): FieldState {
-    const { fieldStates, formState } = this.state;
-
-    const fieldState = fieldStates[name];
-
-    const value = get(field, formState.values) || '';
-    const initial = get(field, formState.values) || '';
-
-    const { submitting } = formState;
-
-    return { ...fieldState, value, initial, submitting };
   }
 
   /**Submmit the form. */
@@ -285,16 +269,19 @@ export default class Formera {
 
   /**Notify all subscribers. */
   private notifySubscribers(formChanges: string[], field?: string, fieldChanges?: string[]) {
-    const { fieldStates, fieldSubscriptions, formState, formSubscriptions } = this.state;
+    const { fieldSubscriptions, formState, formSubscriptions } = this.state;
 
     if (field) {
       this.log('FIELD CHANGES: ', fieldChanges);
 
       for (const fieldSubscription of fieldSubscriptions[field]) {
         if (fieldChanges.some(change => fieldSubscription.options[change])) {
-          fieldSubscription.callback(this.getInput(field));
+          fieldSubscription.callback(this.getFieldState(field));
         }
       }
+
+      //Notifying nested fields.
+      
     }
 
     this.log('FORM CHANGES: ', formChanges);
@@ -306,36 +293,23 @@ export default class Formera {
     }
   }
 
-  /**Return form state. */
-  public getState() {
-    return this.state;
+  /**Return the builded field state with current and initial value. */
+  private getFieldState(field: string): FieldState {
+    const { fieldStates, formState } = this.state;
+
+    const fieldState = fieldStates[field];
+
+    const value = get(formState.values, field) || '';
+    const initial = get(formState.values, field) || '';
+
+    const { submitting } = formState;
+
+    return { ...fieldState, value, initial, submitting };
   }
 
-  /**Returns a field to manipulate and extract data. */
-  private getInput(field: string): Input {
-    const { fieldEntries, fieldStates } = this.state;
-    const fieldState = fieldStates[field];
-    const fieldHandler = fieldEntries[field].handler;
-    return {
-      ...fieldHandler,
-      name: field,
-      value: fieldState.value,
-      disabled: fieldState.disabled,
-      meta: {
-        submitting: fieldState.submitting,
-        active: fieldState.active,
-        touched: fieldState.touched,
-        pristine: fieldState.pristine,
-        dirty: fieldState.dirty,
-        valid: fieldState.valid,
-        validating: fieldState.validating,
-        error: fieldState.error,
-        errors: fieldState.errors,
-        disabled: fieldState.disabled,
-        data: fieldState.data,
-        initial: fieldState.initial,
-      }
-    }
+  /**Return form state. */
+  public getState() {
+    return this.state.formState;
   }
 
   /**Log messages. */
