@@ -23,6 +23,7 @@ export const defaultFieldState: FieldState = {
   validating: false,
   valid: true,
   disabled: false,
+  submitting: false,
   initial: null,
   value: '',
   error: null,
@@ -61,6 +62,7 @@ export const defaultFormSubscriptionOptions: FormSubscriptionOptions = {
 export const defaultFormOptions: FormOptions = {
   debug: false,
   validationType: 'onChange',
+  initialValues: {}
 } as FormOptions
 
 export const defaultFieldRegisterOptions: FieldRegisterOptions = {

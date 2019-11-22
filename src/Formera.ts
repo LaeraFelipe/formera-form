@@ -77,6 +77,8 @@ export default class Formera {
       value: clone(get(formState.values, name)) || ''
     }
 
+    this.state.fieldStates[name].previousState = clone(this.state.fieldStates[name]);
+
     this.state.fieldSubscriptions[name] = [];
 
     this.state.fieldEntries[name].handler = {
@@ -240,6 +242,20 @@ export default class Formera {
     }
   }
 
+  /**Return the builded field state. */
+  public getFieldState(field: string): FieldState {
+    const { fieldStates, formState } = this.state;
+
+    const fieldState = fieldStates[name];
+
+    const value = get(field, formState.values) || '';
+    const initial = get(field, formState.values) || '';
+
+    const { submitting } = formState;
+
+    return { ...fieldState, value, initial, submitting };
+  }
+
   /**Submmit the form. */
   public async submit() {
     const { options, formState } = this.state;
@@ -306,6 +322,7 @@ export default class Formera {
       value: fieldState.value,
       disabled: fieldState.disabled,
       meta: {
+        submitting: fieldState.submitting,
         active: fieldState.active,
         touched: fieldState.touched,
         pristine: fieldState.pristine,

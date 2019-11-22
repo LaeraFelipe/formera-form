@@ -6,11 +6,11 @@ export interface State<T> {
   valid: boolean,
   validating: boolean,
   disabled: boolean,
+  submitting: boolean,
   previousState: Omit<T, 'previousState'>,
 }
 
 export interface FormState extends State<FormState> {
-  submitting: boolean,
   initialValues: any,
   values: any,
   errors?: { [field: string]: string },

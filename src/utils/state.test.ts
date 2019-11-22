@@ -9,6 +9,7 @@ let fakeState: State<any> = {
   touched: false,
   valid: false,
   validating: false,
+  submitting: false,
   previousState: {
     disabled: true,
     active: false,
@@ -23,9 +24,9 @@ let fakeState: State<any> = {
 describe('setState basic tests', () => {
 
   const changes = setState(fakeState, {
-    active: true,
-    dirty: true,
-    touched: true,
+    active: true, //true
+    dirty: true, //false
+    touched: true, //false
   });
 
   it('should return a correct changed key', () => {

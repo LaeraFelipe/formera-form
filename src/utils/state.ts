@@ -21,15 +21,15 @@ export function cloneState<T extends State<any>>(state: T): Omit<T, 'previousSta
 
 /**Set values in state and return an array with changes. */
 export function setState<T extends State<T>>(state: T, changes: { [key in keyof T]?: any }): string[] {
-	state.previousState = cloneState(state);
-
 	let calculatedChanges: string[] = [];
 
 	for (const key in changes) {
-		if (!isEqual(get(state.previousState, key), changes[key])) {
-			set(state, key, changes[key]);
+		const previousValue = get(state, key);
+		if (!isEqual(previousValue, changes[key])) {
 			calculatedChanges.push(getChangedKey(key));
 		}
+		set(state.previousState, key, previousValue);
+		set(state, key, changes[key]);
 	}
 
 	return calculatedChanges;
