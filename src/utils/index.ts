@@ -5,7 +5,9 @@ import pathToArray from './pathToArray';
 import getChangedValue from './getChangedValue';
 import set from './set';
 import merge from './merge';
+import { isFieldChild } from './field';
 import { setState, cloneState } from './state';
+
 
 export {
 	clone,
@@ -16,5 +18,6 @@ export {
 	isEqual,
 	pathToArray,
 	set,
-	merge
+	merge,
+	isFieldChild
 }

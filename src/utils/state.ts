@@ -13,6 +13,20 @@ export function getChangedKey(key: string): string {
 	return key;
 }
 
+/**Returns all state changes comparing with previousState. */
+export function getStateChanges<T extends State<T>>(state: T): string[] {
+	const { previousState, ...currentState } = state;
+	let result = [];
+
+	for (const key in currentState) {
+		if (!isEqual(currentState[key], previousState[key])) {
+			result.push(getChangedKey(key));
+		}
+	}
+
+	return result;
+}
+
 /**Clone a state without clone previousState. */
 export function cloneState<T extends State<any>>(state: T): Omit<T, 'previousState'> {
 	const { previousState, ...toClone } = state;

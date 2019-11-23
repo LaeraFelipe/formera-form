@@ -90,7 +90,7 @@ export interface FormSubscription {
 }
 
 export interface FieldHandler {
-  subscribe(callback: FieldSubscriptionCallback): void,
+  subscribe(callback: FieldSubscriptionCallback, options?: FieldSubscriptionOptions): void,
   onChange(value: any): void,
   onBlur(): void,
   onFocus(): void
