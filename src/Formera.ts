@@ -249,9 +249,15 @@ export default class Formera {
     const { options, formState, fieldStates } = this.state;
     const { onSubmit } = options;
 
-    //Setting all fields touched.
+    //Validating and setting all fields touched.
     for (const field in fieldStates) {
+      await this.validateField(field, false);
       setState<FieldState>(fieldStates[field], { touched: true });
+    }
+
+    if (!formState.valid) {
+      this.notifyAllSubscribers();
+      return;
     }
 
     setState<FormState>(formState, { submitting: true });
