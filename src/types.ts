@@ -94,6 +94,7 @@ export interface FieldHandler {
   onChange(value: any): void,
   onBlur(): void,
   onFocus(): void,
+  disable(): void,
   setData(dataName: string, value: any): void
 }
 

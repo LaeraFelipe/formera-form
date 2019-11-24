@@ -46,9 +46,11 @@ export default class Formera {
 
     this.state.formSubscriptions = [];
 
+    this.focus = this.focus.bind(this);
     this.change = this.change.bind(this);
     this.blur = this.blur.bind(this);
-    this.focus = this.focus.bind(this);
+    this.setFieldData = this.setFieldData.bind(this);
+    this.disable = this.disable.bind(this);
     this.registerField = this.registerField.bind(this);
     this.unregisterField = this.unregisterField.bind(this);
     this.fieldSubscribe = this.fieldSubscribe.bind(this);
@@ -87,6 +89,7 @@ export default class Formera {
       onChange: (value: any) => this.change(name, value),
       onBlur: () => this.blur(name),
       onFocus: () => this.focus(name),
+      disable: () => this.disable(name),
       setData: (dataName: string, value: any) => this.setFieldData(name, dataName, value)
     }
 
