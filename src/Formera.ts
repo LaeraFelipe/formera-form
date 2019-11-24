@@ -159,6 +159,20 @@ export default class Formera {
 
     this.notifyFormSubscribers(formChanges);
 
+    //Validating and notifying current field.
+    if (field) {
+      const fieldEntrie = fieldEntries[field];
+      let fieldState = fieldStates[field];
+
+      const fieldChanges = setState<FieldState>(fieldState, { pristine: isPristine });
+      if (valueChanged) fieldChanges.push('value');
+
+      if (fieldEntrie.validationType === "onChange") {
+        this.validateField(field);
+      };
+      this.notifyFieldSubscribers(field, fieldChanges);
+    }
+
     //Validating and notifying all childs.
     if (hasChilds) {
       for (const nested in fieldEntries) {
@@ -192,19 +206,6 @@ export default class Formera {
           }
         }
       }
-    }
-    //Validating and notifying just current field.
-    else if (field) {
-      const fieldEntrie = fieldEntries[field];
-      let fieldState = fieldStates[field];
-
-      const fieldChanges = setState<FieldState>(fieldState, { pristine: isPristine });
-      if (valueChanged) fieldChanges.push('value');
-
-      if (fieldEntrie.validationType === "onChange") {
-        this.validateField(field);
-      };
-      this.notifyFieldSubscribers(field, fieldChanges);
     }
     this.endDebug();
   }
@@ -252,6 +253,14 @@ export default class Formera {
 
     const hasChild = this.hasChild(field);
 
+    if (field) {
+      const fieldState = fieldStates[field];
+      const fieldChanges = setState<FieldState>(fieldState, { disabled: true });
+      this.notifyFieldSubscribers(field, fieldChanges);
+    } else {
+      this.notifyFormSubscribers();
+    }
+
     if (hasChild) {
       for (const nested in fieldEntries) {
         if (isFieldChild(field, nested)) {
@@ -260,10 +269,6 @@ export default class Formera {
           this.notifyFieldSubscribers(nested, nestedChanges);
         }
       }
-    } else {
-      const fieldState = fieldStates[field];
-      const fieldChanges = setState<FieldState>(fieldState, { disabled: true });
-      this.notifyFieldSubscribers(field, fieldChanges);
     }
   }
 
