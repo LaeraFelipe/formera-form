@@ -1,48 +1,124 @@
 import Formera from ".";
 
-const formeraInstance = new Formera({
-  debug: false,
-  initialValues: { third: 'Initial value' },
-  onSubmit: (values) => console.log('submit', values)
-});
-
+const initialValue = {
+  field1: 'test',
+  field2: 'test',
+  field3: [
+    {
+      field4: 'test',
+      field5: ''
+    }
+  ]
+}
 
 describe('formera base tests', () => {
   it('testing subscriptions', () => {
-    const firstHandler = formeraInstance.registerField('first');
+    const subscriptionFormeraInstance = new Formera({
+      debug: false,
+      initialValues: initialValue,
+      onSubmit: (values) => console.log('submit', values)
+    });
 
-    formeraInstance.fieldSubscribe('first', ({ value, pristine }) => {
+    const field1 = subscriptionFormeraInstance.registerField('field1');
+
+    subscriptionFormeraInstance.fieldSubscribe('field1', ({ value, pristine }) => {
       expect(value).toBe('changedValue');
       expect(pristine).toBe(false);
     });
 
-    formeraInstance.formSubscribe(({ values }) => {
-      expect(values).toStrictEqual({ first: 'changedValue', third: 'Initial value' });
+    subscriptionFormeraInstance.formSubscribe(({ values }) => {
+      expect(values).toStrictEqual({ ...initialValue, field1: 'changedValue' });
     })
 
-    firstHandler.onChange('changedValue');
+    field1.onChange('changedValue');
   });
 
-  it('testing validators', () => {
-    const secondHandler = formeraInstance.registerField('second', { validators: ['required'] });
+  it('testing validators', done => {
+    const validatorFormeraInstance = new Formera({
+      debug: false,
+      initialValues: initialValue,
+      onSubmit: (values) => console.log('submit', values)
+    });
 
-    formeraInstance.fieldSubscribe('second', ({ valid }) => {
-      expect(valid).toBe(false);
+    const field1 = validatorFormeraInstance.registerField('field1', { validators: ['required'] });
+
+    expect.assertions(3);
+
+    validatorFormeraInstance.fieldSubscribe('field1', ({ value, pristine, valid }) => {
+      if (!valid) {
+        expect(value).toBe('');
+        expect(pristine).toBe(false);
+        expect(valid).toBe(false);
+        done();
+      }
+
     }, { valid: true });
 
-    const thirdhandler = formeraInstance.registerField('third', { validators: ['required'] });
-
-    formeraInstance.fieldSubscribe('third', ({ valid }) => {
-      expect(valid).toBe(true);
-    }, { valid: true });
+    field1.onChange('');
   });
 
-  it('testing submit', () => {
-    formeraInstance.submit()
-    .then(() => {
-     expect(formeraInstance.getFieldState('first').touched).toBe(true);
-     expect(formeraInstance.getFieldState('second').touched).toBe(true);
-     expect(formeraInstance.getFieldState('third').touched).toBe(true);
-    })
+  it('testing nested updates', done => {
+    const nestedUpdateFormeraInstance = new Formera({
+      debug: false,
+      initialValues: initialValue,
+      onSubmit: (values) => console.log('submit', values)
+    });
+
+    nestedUpdateFormeraInstance.registerField('field1', { validators: ['required'] });
+    nestedUpdateFormeraInstance.registerField('field2', { validators: ['required'] });
+    const field3 = nestedUpdateFormeraInstance.registerField('field3', { validators: ['required'] });
+    const field4 = nestedUpdateFormeraInstance.registerField('field3[0].field4', { validators: ['required'] });
+    const field5 = nestedUpdateFormeraInstance.registerField('field3[0].field5', { validators: ['required'] });
+
+    let field4notify = false, field5notify = false, afterNestedUpdate = false;
+
+    field4.subscribe(({ valid }) => {
+      if (afterNestedUpdate) {
+        if (!valid) {
+          field4notify = true;
+        }
+      }
+    }, { valid: true });
+
+    field5.subscribe(({ valid }) => {
+      if (afterNestedUpdate) {
+        if (valid && field4notify) {
+          done();
+        }
+      }
+    }, { valid: true });
+
+    field3.onChange([{
+      field4: '',
+      field5: 'test'
+    }]);
+
+    afterNestedUpdate = true;
+  })
+
+  it('testing submit', done => {
+    const submitFormeraInstance = new Formera({
+      debug: false,
+      initialValues: initialValue,
+      onSubmit: (values) => console.log('submit', values)
+    });
+
+    submitFormeraInstance.registerField('field1', { validators: ['required'] });
+    submitFormeraInstance.registerField('field2', { validators: ['required'] });
+    submitFormeraInstance.registerField('field3', { validators: ['required'] });
+    submitFormeraInstance.registerField('field3.field4', { validators: ['required'] });
+    submitFormeraInstance.registerField('field3.field5', { validators: ['required'] });
+
+
+    submitFormeraInstance.submit()
+      .then(() => {
+        expect(submitFormeraInstance.getFieldState('field1').touched).toBe(true);
+        expect(submitFormeraInstance.getFieldState('field2').touched).toBe(true);
+        expect(submitFormeraInstance.getFieldState('field3').touched).toBe(true);
+        expect(submitFormeraInstance.getFieldState('field3.field4').touched).toBe(true);
+        expect(submitFormeraInstance.getFieldState('field3.field5').touched).toBe(true);
+
+        done();
+      });
   })
 })

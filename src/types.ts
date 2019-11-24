@@ -50,7 +50,7 @@ export interface FieldRegisterOptions {
 }
 
 export interface FieldEntrie extends FieldRegisterOptions {
-  handler?: FieldHandler,
+  handler?: FieldHandler
 }
 
 export type FieldEntries = {
@@ -93,7 +93,8 @@ export interface FieldHandler {
   subscribe(callback: FieldSubscriptionCallback, options?: FieldSubscriptionOptions): void,
   onChange(value: any): void,
   onBlur(): void,
-  onFocus(): void
+  onFocus(): void,
+  setData(dataName: string, value: any): void
 }
 
 
