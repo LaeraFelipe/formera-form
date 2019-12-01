@@ -1,12 +1,12 @@
 import initializeValidators from '.';
-import defaultMessages from './messages';
+import {getValidatorMessage} from './messages';
 import { FieldState } from '../types';
 
 describe('validation base tests', () => {
   it('should return a default required message', () => {
     const validators = initializeValidators();
     const validationResult = validators.required({} as FieldState, {} as any);
-    expect(validationResult).toBe(defaultMessages.required);
+    expect(validationResult).toBe(getValidatorMessage('required'));
   });
 
   it('should return a custom required message', () => {

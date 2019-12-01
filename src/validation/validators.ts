@@ -1,39 +1,48 @@
-import { FieldState, ValidationMessageSource } from "../types";
+import { FieldState } from "../types";
+import { getValidatorMessage } from "./messages";
 
-/**Source of validation messages. */
-let messages: ValidationMessageSource = {};
+const EMAIL_REGEX = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 
-/**Set the messages to return in validator functions. */
-export function setMessages(customMessages: ValidationMessageSource) {
-  messages = customMessages;
-}
-
-//VALIDATORS
-
-export function required(fieldState: FieldState, formValues: any, []): string {
-  const { value } = fieldState;
-
+export function required({ value }: FieldState, formValues: any, []): string {
   if (!value) {
-    return messages.required
+    return getValidatorMessage('required');
   }
 }
 
-export function maxLength(fieldState: FieldState, formValues: any, [length]): string {
-  const { value } = fieldState;
-
+export function maxLength({ value }: FieldState, formValues: any, [length]): string {
   if (value) {
     if (value.length > length) {
-      return messages.maxLength;
+      return getValidatorMessage('maxLength', { maxLength: length });
     }
   }
 }
 
-export function minLength(fieldState: FieldState, formValues: any, [length]): string {
-  const { value } = fieldState;
-
+export function minLength({ value }: FieldState, formValues: any, [length]): string {
   if (value) {
     if (value.length < length) {
-      return messages.minLength;
+      return getValidatorMessage('minLength', { minLength: length });
     }
+  }
+}
+
+export function min({ value }: FieldState, formValues: any, [min]): string {
+  if (value) {
+    if (value < min) {
+      return getValidatorMessage('min', { min: min });
+    }
+  }
+}
+
+export function max({ value }: FieldState, formValues: any, [max]): string {
+  if (value) {
+    if (value > max) {
+      return getValidatorMessage('max', { max: max });
+    }
+  }
+}
+
+export function email({ value }: FieldState, formValues: any, []) {
+  if (!EMAIL_REGEX.test(value)) {
+    return getValidatorMessage('email');
   }
 }

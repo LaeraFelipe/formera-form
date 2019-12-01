@@ -1,4 +1,5 @@
 import Formera from ".";
+import { getValidatorMessage } from "./validation/messages";
 
 const initialValue = {
   field1: 'test',
@@ -55,6 +56,29 @@ describe('formera base tests', () => {
     }, { valid: true });
 
     field1.onChange('');
+  });
+
+  it('testing multiple validators', done => {
+    const multipleValidatorFormeraInstance = new Formera({
+      debug: false,
+      initialValues: initialValue,
+      onSubmit: (values) => console.log('submit', values)
+    });
+
+    const field1 = multipleValidatorFormeraInstance.registerField('multipleValidatorField', { validators: ['required', 'email'] });
+
+    expect.assertions(3);
+
+    multipleValidatorFormeraInstance.fieldSubscribe('multipleValidatorField', ({ value, valid, error }) => {
+      if (error && !valid) {
+        expect(value).toBe('aaaa');
+        expect(valid).toBe(false);
+        expect(error).toBe(getValidatorMessage('email'));
+        done();
+      }
+    }, { valid: true, value: true, error: true });
+
+    field1.onChange('aaaa');
   });
 
   it('testing nested updates', done => {

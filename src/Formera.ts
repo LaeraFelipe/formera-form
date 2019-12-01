@@ -319,17 +319,16 @@ export default class Formera {
         }
 
         try {
-          if (typeof validator === 'string') {
-            const currentError =
-              await validatorsFunctions[validatorName](this.getFieldState(field), formState.values, validatorParams);
+          const currentError =
+            await validatorsFunctions[validatorName](this.getFieldState(field), formState.values, validatorParams);
 
-            errors[validator] = currentError;
+          if (currentError) {
+            errors[validatorName] = currentError;
 
             if (!error) {
               error = currentError;
               if (stopValidationOnFirstError) break;
             }
-
           }
         } catch (error) {
           this.log('VALIDATION ERROR', error);
