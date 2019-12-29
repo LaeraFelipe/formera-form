@@ -19,8 +19,8 @@ export interface FormState extends State<FormState> {
 export interface FieldState extends State<FieldState> {
   initial: any,
   value: any,
-  error?: string,
   data?: any,
+  error?: string,
   errors?: { [validator: string]: string },
 }
 
@@ -50,7 +50,8 @@ export interface FieldRegisterOptions {
 }
 
 export interface FieldEntrie extends FieldRegisterOptions {
-  handler?: FieldHandler
+  handler?: FieldHandler,
+  debounceRefs?: { [key: string]: any }
 }
 
 export type FieldEntries = {
@@ -98,9 +99,9 @@ export interface FieldHandler {
   setData(dataName: string, value: any): void
 }
 
-
 export interface FieldValidator {
   name: string,
+  debounce?: number,
   params?: []
 }
 

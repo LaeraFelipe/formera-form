@@ -5,6 +5,7 @@ import pathToArray from './pathToArray';
 import getChangedValue from './getChangedValue';
 import set from './set';
 import merge from './merge';
+import debouncePromise from './debounce';
 import { isFieldChild } from './field';
 import { setState, cloneState } from './state';
 
@@ -19,5 +20,6 @@ export {
 	pathToArray,
 	set,
 	merge,
-	isFieldChild
+	isFieldChild,
+	debouncePromise,
 }

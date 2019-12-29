@@ -1,6 +1,6 @@
 import initializeValidators from './validation';
 import { defaultFormState, defaultFieldState, defaultFieldSubscriptionOptions, defaultFormSubscriptionOptions, defaultFieldRegisterOptions, defaultFormOptions } from "./defaultValues";
-import { getChangedValue, clone, cloneState, get, setState, isEqual, merge, isFieldChild } from "./utils";
+import { debouncePromise, clone, cloneState, get, setState, isEqual, merge, isFieldChild } from "./utils";
 import { FormState, FormOptions, FieldSubscriptionOptions, FormSubscriptionCallback, FieldSubscriptionCallback, FormSubscriptionOptions, FieldRegisterOptions, FieldState, InternalState, FieldHandler } from "./types";
 import { getStateChanges } from './utils/state';
 
@@ -288,64 +288,152 @@ export default class Formera {
     this.notifyFieldSubscribers(field, changes);
   }
 
-  /**Do the field validation. */
-  public async validateField(field: string, notifySubscribers: boolean = true): Promise<void> {
-    const { fieldEntries, fieldStates, formState, validators: validatorsFunctions } = this.state;
-    const { validators, stopValidationOnFirstError } = fieldEntries[field];
+  /**Finish field validation. */
+  private finishFieldValidation(field: string, error: string, errors: { [validator: string]: string }, notifySubscribers: boolean = false) {
+    const { fieldStates, formState } = this.state;
 
-    this.log('VALIDATORS', validators)
+    const fieldState = fieldStates[field];
+
+
+    const fieldChanges = setState<FieldState>(fieldState, { validating: false, valid: !error, errors, error });
+
+    let formValidating = false, formValid = true;
+
+    //Calculating form validation props.
+    for (const key in fieldStates) {
+      if (fieldStates[key].validating) {
+        formValidating = true;
+      }
+
+      if (!fieldStates[key].valid) {
+        formValid = false;
+      }
+    }
+
+    const formChanges = setState<FormState>(formState, {
+      validating: formValidating,
+      valid: formValid,
+      [`errors.${field}`]: { ...errors }
+    });
+
+    if (notifySubscribers) {
+      this.notifyFormSubscribers(formChanges);
+      this.notifyFieldSubscribers(field, fieldChanges);
+    }
+    return;
+  }
+
+  /**Resolves a validator. */
+  private validateField(field: string, notifySubscribers: boolean = true) {
+    const { fieldEntries, fieldStates, formState, validators: validatorsFunctions } = this.state;
+
+    const fieldEntrie = fieldEntries[field];
+    const fieldState = fieldStates[field];
+
+    const { validators, stopValidationOnFirstError } = fieldEntrie;
 
     if (validators && validators.length) {
-      const fieldState = fieldStates[field];
-
+      this.log('VALIDATORS', validators);
+      //Setting validating true in fieldState and formState.
       let fieldChanges = setState<FieldState>(fieldState, { validating: true });
       let formChanges = setState<FormState>(formState, { validating: true });
 
+      //Notifying subscribers.
       if (notifySubscribers) {
         this.notifyFormSubscribers(formChanges);
         this.notifyFieldSubscribers(field, fieldChanges);
       }
 
-      let error: string, errors = {};
+      let validatorPromises: Array<Promise<string>> = [],
+        validatorPromisesNames: Array<string> = [],
+        errors: { [validator: string]: string } = {},
+        error: string;
 
       for (const validator of validators) {
-        let validatorName: string, validatorParams = [];
+        let validatorName: string, validatorParams = [], debounce: number;
 
-        if (typeof validator === "string") {
-          validatorName = validator;
-        } else {
+        if (typeof validator === "object") {
           validatorName = validator.name;
-          validatorParams = validator.params || [];
+          validatorParams = validator.params;
+          debounce = validator.debounce;
+        } else {
+          validatorName = validator;
         }
 
-        try {
-          const currentError =
-            await validatorsFunctions[validatorName](this.getFieldState(field), formState.values, validatorParams);
+        const validatorFunction = validatorsFunctions[validatorName];
 
-          if (currentError) {
-            errors[validatorName] = currentError;
+        if (validatorFunction) {
+          const fieldStateWithValue = this.getFieldState(field);
 
-            if (!error) {
-              error = currentError;
-              if (stopValidationOnFirstError) break;
+          let result = null;
+
+          if (debounce) {
+            fieldEntrie.debounceRefs = fieldEntrie.debounceRefs || {};
+
+            fieldEntrie.debounceRefs[validatorName] =
+              fieldEntrie.debounceRefs[validatorName] ||
+              debouncePromise(validatorFunction, debounce);
+
+            result = fieldEntrie.debounceRefs[validatorName](fieldStateWithValue, formState.values, validatorParams);
+          } else {
+            result = validatorFunction(fieldStateWithValue, formState.values, validatorParams);
+          }
+
+          const isValidatorPromisse = (result && result.then && typeof result.then) === "function";
+
+          //If validator function has result.
+          if (result) {
+            //If validator return a promise.
+            if (isValidatorPromisse) {
+              validatorPromisesNames.push(validatorName);
+              validatorPromises.push(result);
+            } else {
+              //Setting the first error.
+              if (!error) {
+                error = result;
+              }
+              //Setting the error for validator name.
+              errors[validatorName] = result;
+
+              //Stops loop.
+              if (stopValidationOnFirstError) {
+                break;
+              }
             }
           }
-        } catch (error) {
-          this.log('VALIDATION ERROR', error);
         }
       }
 
-      fieldChanges = setState<FieldState>(fieldState, { validating: false, valid: !error, errors, error });
+      //If has error and should stop validation on first error.
+      if ((error && stopValidationOnFirstError) || validatorPromises.length === 0) {
+        this.finishFieldValidation(field, error, errors, notifySubscribers);
+        return;
+      }
+      //If are promises for validate.
+      else {
+        Promise.all(validatorPromises).then(results => {
+          for (let index = 0; index < results.length; index++) {
+            const result = results[index];
 
-      formChanges = setState<FormState>(formState, {
-        validating: false,
-        valid: error ? false : !Object.keys(fieldStates).some(key => !fieldStates[key].valid),
-        [`errors.${field}`]: { ...errors }
-      });
+            if (result) {
+              errors[validatorPromisesNames[index]] = result;
 
-      if (notifySubscribers) {
-        this.notifyFormSubscribers(formChanges);
-        this.notifyFieldSubscribers(field, fieldChanges);
+              if (!error) {
+                error = result;
+              }
+
+              if (stopValidationOnFirstError) {
+                break;
+              }
+            }
+          }
+
+          this.finishFieldValidation(field, error, errors, notifySubscribers);
+        })
+          .catch(validationError => {
+            this.log('VALIDATION REJECT', validationError);
+            this.finishFieldValidation(field, validationError.message, errors, notifySubscribers);
+          })
       }
     }
   }

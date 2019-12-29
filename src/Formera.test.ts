@@ -65,9 +65,10 @@ describe('formera base tests', () => {
       onSubmit: (values) => console.log('submit', values)
     });
 
-    const field1 = multipleValidatorFormeraInstance.registerField('multipleValidatorField', { validators: ['required', 'email'] });
+    const field1 = multipleValidatorFormeraInstance
+      .registerField('multipleValidatorField', { validators: ['required', 'email'] });
 
-    expect.assertions(3);
+    expect.assertions(6);
 
     multipleValidatorFormeraInstance.fieldSubscribe('multipleValidatorField', ({ value, valid, error }) => {
       if (error && !valid) {
@@ -94,21 +95,17 @@ describe('formera base tests', () => {
     const field4 = nestedUpdateFormeraInstance.registerField('field3[0].field4', { validators: ['required'] });
     const field5 = nestedUpdateFormeraInstance.registerField('field3[0].field5', { validators: ['required'] });
 
-    let field4notify = false, field5notify = false, afterNestedUpdate = false;
+    let field4notify = false;
 
     field4.subscribe(({ valid }) => {
-      if (afterNestedUpdate) {
-        if (!valid) {
-          field4notify = true;
-        }
+      if (!valid) {
+        field4notify = true;
       }
     }, { valid: true });
 
     field5.subscribe(({ valid }) => {
-      if (afterNestedUpdate) {
-        if (valid && field4notify) {
-          done();
-        }
+      if (valid && field4notify) {
+        done();
       }
     }, { valid: true });
 
@@ -116,8 +113,6 @@ describe('formera base tests', () => {
       field4: '',
       field5: 'test'
     }]);
-
-    afterNestedUpdate = true;
   })
 
   it('testing submit', done => {
