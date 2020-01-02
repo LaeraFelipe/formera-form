@@ -1,0 +1,7 @@
+{
+  "excludeNotExported": true,
+  "excludePrivate": true,
+  "excludeExternals": true,
+  "exclude": "*.test",
+  "mode": "file"
+}

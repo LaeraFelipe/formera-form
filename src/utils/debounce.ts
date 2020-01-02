@@ -1,5 +1,5 @@
 /**Make the functions not execute multiple times. */
-export default function debouncePromise(func: Function, wait: number, promise = false): Function {
+export default function debouncePromise(func: Function, wait: number): Function {
   let timeout = null;
   return function () {
     const context = this, args = arguments;
