@@ -24,7 +24,7 @@ The full documentation can be found at [formera-form](http://www.laerasoftware.c
 ## Authors
 
  
-*  **Felipe Laera** - *Software 
+*  **Felipe Laera** - *Software Engineer*
 
 See also the list of [contributors](https://github.com/LaeraFelipe/formera-form/contributors) who participated in this project.
   
