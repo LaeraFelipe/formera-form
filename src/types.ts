@@ -69,11 +69,13 @@ export interface FormOptions {
   /**Submit callback.
    * @param values Current form values.
    */
-  onSubmit: (values: any) => any,
+  onSubmit: (formState: FormState) => any,
   /**Validator functions for use by fields. */
   customValidators?: ValidationFunctionSource,
   /**Validation messages for use by standard validators. */
   customValidationMessages?: ValidationMessageSource,
+  /**If values must be valid to submit. */
+  allowInvalidSubmit?: boolean,
   /**Validation type. */
   validationType?: 'onChange' | 'onBlur',
   /**If the form is in debug mode. If true each form action will log information. */

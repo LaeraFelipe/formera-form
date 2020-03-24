@@ -490,14 +490,14 @@ export default class Formera {
   /**Submmit the form. */
   public async submit() {
     const { options, formState, fieldStates } = this.state;
-    const { onSubmit } = options;
+    const { onSubmit, allowInvalidSubmit } = options;
 
     //Setting all fields touched.
     for (const field in fieldStates) {
       setState<FieldState>(fieldStates[field], { touched: true });
     }
 
-    if (!formState.valid) {
+    if (!formState.valid && !allowInvalidSubmit) {
       this.notifyAllSubscribers();
       return;
     }
