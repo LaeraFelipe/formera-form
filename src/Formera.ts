@@ -506,7 +506,7 @@ export default class Formera {
 
     this.notifyAllSubscribers();
 
-    await onSubmit(formState.values);
+    await onSubmit(formState);
 
     setState<FormState>(formState, { submitting: false });
 
