@@ -1,0 +1,7 @@
+node_modules
+docs
+src
+jest.config.js
+*.test.js
+.vscode
+typedoc.json

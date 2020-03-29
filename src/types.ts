@@ -167,7 +167,7 @@ export interface FieldValidator {
   /**Debounce time. */
   debounce?: number,
   /**Params to the validator function. */
-  params?: []
+  params?: any[]
 }
 
 /**
