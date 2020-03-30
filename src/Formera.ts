@@ -1,7 +1,7 @@
 import initializeValidators from './validation';
 import { defaultFormState, defaultFieldState, defaultFieldSubscriptionOptions, defaultFormSubscriptionOptions, defaultFieldRegisterOptions, defaultFormOptions } from "./defaultValues";
 import { debouncePromise, clone, cloneState, get, setState, isEqual, merge, isFieldChild } from "./utils";
-import { FormState, FormOptions, FieldSubscriptionOptions, FormSubscriptionCallback, FieldSubscriptionCallback, FormSubscriptionOptions, FieldRegisterOptions, FieldState, InternalState, FieldHandler } from "./types";
+import { FormState, FormOptions, FieldSubscriptionOptions, FormSubscriptionCallback, FieldSubscriptionCallback, FormSubscriptionOptions, FieldRegisterOptions, FieldState, InternalState, FieldHandler, ValidatorFunction } from "./types";
 import { getStateChanges } from './utils/state';
 
 /**Timer identifier to log. */
@@ -399,17 +399,20 @@ export default class Formera {
         error: string;
 
       for (const validator of validators) {
-        let validatorName: string, validatorParams = [], debounce: number;
+        let validatorName: string,
+          validatorParams = [],
+          debounce: number,
+          validatorFunction: ValidatorFunction;
 
         if (typeof validator === "object") {
           validatorName = validator.name;
           validatorParams = validator.params;
           debounce = validator.debounce;
+          validatorFunction = validator.func || validatorsFunctions[validatorName];
         } else {
           validatorName = validator;
+          validatorFunction = validatorsFunctions[validatorName];
         }
-
-        const validatorFunction = validatorsFunctions[validatorName];
 
         if (validatorFunction) {
           const fieldStateWithValue = this.getFieldState(field);
@@ -450,6 +453,8 @@ export default class Formera {
               }
             }
           }
+        } else {
+          throw new Error(`The validator "${validatorName}" in field "${field}" dosent exist. `)
         }
       }
 

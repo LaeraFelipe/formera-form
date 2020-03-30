@@ -1,5 +1,6 @@
 import Formera from ".";
 import { getValidatorMessage } from "./validation/messages";
+import { ValidatorFunction } from "./types";
 
 const initialValue = {
   field1: 'test',
@@ -80,6 +81,33 @@ describe('formera base tests', () => {
     }, { valid: true, value: true, error: true });
 
     field1.onChange('aaaa');
+  });
+
+  it('testing custom validators', done => {
+    const multipleValidatorFormeraInstance = new Formera({
+      debug: false,
+      initialValues: initialValue,
+      onSubmit: (values) => console.log('submit', values)
+    });
+
+    const customValidatorFunction: ValidatorFunction = ({ value }) => {
+      if (value === 'test') {
+        return 'Custom validator test'
+      }
+    }
+
+    const field1 = multipleValidatorFormeraInstance
+      .registerField('customValidatorField',
+        { validators: [{ name: 'customValidator', func: customValidatorFunction }] });
+
+    multipleValidatorFormeraInstance
+      .fieldSubscribe('customValidatorField', ({ valid, error }) => {
+        if (!valid && error === 'Custom validator test') {
+          done();
+        }
+      }, { valid: true });
+
+    field1.onChange('test');
   });
 
   it('testing nested updates', done => {
