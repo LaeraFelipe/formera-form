@@ -125,6 +125,13 @@ export default class Formera {
     delete this.state.fieldSubscriptions[field]
   }
 
+  /**Reset with initial values. */
+  public reset(initialValues: any) {
+    const { formState } = this.state;
+    formState.initialValues = initialValues;
+    this.change(null, initialValues);
+  }
+
   /**
    * Do the focus actions in a field state. 
    * @param field Field name.
@@ -162,7 +169,7 @@ export default class Formera {
 
     const previousValue = get(formState.values, field);
     const valueChanged = !isEqual(previousValue, value);
-    const isPristine = isEqual(get(formState.initialValues, field), value);
+    const isPristine = isEqual(get(formState.initialValues, field) || '', value);
 
     //Getting the path to ser field value.
     const keyToSet = field ? `values.${field}` : 'values';
@@ -675,5 +682,4 @@ export default class Formera {
       console.groupEnd();
     }
   }
-
 }

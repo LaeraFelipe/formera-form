@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>formera-form - v1.0.28</title>
+	<title>formera-form - v1.0.33</title>
 	<meta name="description" content="">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="assets/css/main.css">
@@ -22,7 +22,7 @@
 						<li class="state loading">Preparing search index...</li>
 						<li class="state failure">The search index is not available</li>
 					</ul>
-					<a href="index.html" class="title">formera-form - v1.0.28</a>
+					<a href="index.html" class="title">formera-form - v1.0.33</a>
 				</div>
 				<div class="table-cell" id="tsd-widgets">
 					<div id="tsd-filter">
@@ -52,7 +52,7 @@
 					<a href="globals.html">Globals</a>
 				</li>
 			</ul>
-			<h1> formera-form - v1.0.28</h1>
+			<h1> formera-form - v1.0.33</h1>
 		</div>
 	</div>
 </header>
@@ -63,12 +63,11 @@
 				<a href="#formera" id="formera" style="color: inherit; text-decoration: none;">
 					<h1>Formera</h1>
 				</a>
-				<p>Formera is a form lib focused on high performance and participle. All its functionalities were developed aiming at the smallest
-				size and smallest impact on performace.</p>
+				<p>Formera is a typescript form lib focused on high performance and participle. All its functionalities were developed aiming at the smallest size and smallest impact on performace.</p>
 				<a href="#getting-started" id="getting-started" style="color: inherit; text-decoration: none;">
 					<h2>Getting Started</h2>
 				</a>
-				<p>These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.</p>
+				<p>These instructions will help you to get and use formera on your app.</p>
 				<a href="#prerequisites" id="prerequisites" style="color: inherit; text-decoration: none;">
 					<h3>Prerequisites</h3>
 				</a>
@@ -77,6 +76,96 @@
 					<h3>Installing</h3>
 				</a>
 				<pre><code><span class="hljs-built_in">npm</span> install --save formera-form@latest</code></pre>
+				<a href="#using" id="using" style="color: inherit; text-decoration: none;">
+					<h3>Using</h3>
+				</a>
+				<p>Basically all you need to do is create a form, register your fields and change values.</p>
+				<pre><code class="language-js"><span class="hljs-keyword">import</span> Formera <span class="hljs-keyword">from</span> <span class="hljs-string">'formera-form'</span>;
+
+<span class="hljs-comment">//Creaging a form.</span>
+<span class="hljs-keyword">const</span> formInstance = <span class="hljs-keyword">new</span> Formera({
+  <span class="hljs-attr">initialValues</span>: {},
+  <span class="hljs-attr">allowInvalidSubmit</span>: <span class="hljs-literal">true</span>,
+  <span class="hljs-attr">onSubmit</span>: <span class="hljs-function">(<span class="hljs-params">formState</span>) =&gt;</span> <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'Submiting: '</span>, formState.values)
+});
+
+<span class="hljs-comment">//Subscribing on form state changes.</span>
+formInstance.formSubscribe(<span class="hljs-function">(<span class="hljs-params">formState</span>) =&gt;</span> {
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'Formstate changes: '</span>, formState);
+});
+
+<span class="hljs-comment">//Creating a field.</span>
+<span class="hljs-keyword">const</span> field1 = formInstance.registerField(<span class="hljs-string">'field1'</span>);
+<span class="hljs-comment">//Subscribing on field changes.</span>
+field1.subscribe(<span class="hljs-function">(<span class="hljs-params">fieldState</span>) =&gt;</span> {
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'Fieldstate changes: '</span>, fieldState;
+});
+
+field1.onChange(<span class="hljs-string">'test'</span>);</code></pre>
+				<a href="#validation" id="validation" style="color: inherit; text-decoration: none;">
+					<h4>Validation</h4>
+				</a>
+				<p>Formera can do validation on fields in two ways configured by the option <b>validationType</b>. And this can be specified in options passed to the Formera constructor and overrided in field register options if you want. The two accepted values are &quot;onBlur&quot; or &quot;onChange&quot;. </p>
+				<pre><code class="language-js"><span class="hljs-comment">//In Formera constructor.</span>
+<span class="hljs-keyword">const</span> formInstance = <span class="hljs-keyword">new</span> Formera({
+  <span class="hljs-attr">validationType</span>: <span class="hljs-string">'onBlur'</span>
+});
+
+<span class="hljs-comment">//Or in field register options.</span>
+<span class="hljs-keyword">const</span> field1 = formInstance.registerField(<span class="hljs-string">'field1'</span>, {<span class="hljs-attr">validationType</span>: <span class="hljs-string">'onChange'</span>});</code></pre>
+				<p>To tell the field the validators that he have to use, you have to pass an array with the validators names or literal objects(detailed <a href="http://www.laerasoftware.com/formera-form-react/interfaces/fieldvalidator.html">here</a>) that you want.</p>
+				<pre><code class="language-js"><span class="hljs-comment">//Or in field register options.</span>
+<span class="hljs-keyword">const</span> field1 = formInstance.registerField(<span class="hljs-string">'field1'</span>, { <span class="hljs-attr">validationType</span>: <span class="hljs-string">'onChange'</span>, <span class="hljs-attr">validators</span>: [<span class="hljs-string">'required'</span>] });</code></pre>
+				<p>You can set a source of validation functions and validation messages in formera this way:</p>
+				<pre><code class="language-js"><span class="hljs-comment">//Creating custom validation functions to formera.</span>
+<span class="hljs-keyword">const</span> customValidators = {
+  <span class="hljs-comment">//Creating a new validator.</span>
+  <span class="hljs-attr">password</span>: <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">{ value }</span>) </span>{
+    <span class="hljs-keyword">if</span> (!value || value.length &lt; <span class="hljs-number">8</span>) {
+      <span class="hljs-keyword">return</span> customValidationMessages.password;
+    }
+  }
+}
+
+<span class="hljs-comment">//Creating custom validation messages to formera.</span>
+<span class="hljs-keyword">const</span> customValidationMessages = {
+  <span class="hljs-comment">//Replacing the message to default validator required.</span>
+  <span class="hljs-attr">required</span>: <span class="hljs-string">'My custom message'</span>,
+  <span class="hljs-attr">password</span>: <span class="hljs-string">'Invalid password'</span>
+}
+
+<span class="hljs-comment">//Creaging a form with custom validation functions and messages.</span>
+<span class="hljs-keyword">const</span> formInstance = <span class="hljs-keyword">new</span> Formera({
+  <span class="hljs-attr">initialValues</span>: {},
+  <span class="hljs-attr">onSubmit</span>: <span class="hljs-function">(<span class="hljs-params">formState</span>) =&gt;</span> <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'Submiting: '</span>, formState.values),
+  <span class="hljs-comment">//Passing custom validation messages to formera.</span>
+  <span class="hljs-attr">customValidationMessages</span>: customValidationMessages,
+  <span class="hljs-comment">//Passing custom validation functions to formera.</span>
+  <span class="hljs-attr">customValidators</span>: customValidators,
+});
+
+<span class="hljs-keyword">const</span> field1 = formInstance.registerField(<span class="hljs-string">'field1'</span>,
+  {
+    <span class="hljs-attr">validators</span>: [
+      <span class="hljs-comment">//Default required validator.</span>
+      <span class="hljs-string">'required'</span>,
+      <span class="hljs-comment">//Custom validation function 'password'.</span>
+      <span class="hljs-string">'password'</span>
+    ]
+  }
+);</code></pre>
+				<p>If you want to use the same validators in other forms, you can export <b>customValidators</b> and <b>customValidationMessages</b> in other file and use in everywhere you want.</p>
+				<p>If you want to use a validator in a single form you can create it in the same file and use in your fields.</p>
+				<pre><code class="language-js">
+<span class="hljs-keyword">const</span> myLocalValidator = {
+  <span class="hljs-attr">name</span>: <span class="hljs-string">'myCustomValidator'</span>,
+  <span class="hljs-attr">func</span>: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">{ value }</span>) </span>{
+    <span class="hljs-comment">//Do your validation here...</span>
+  }
+}
+
+<span class="hljs-keyword">const</span> field1 = formInstance.registerField(<span class="hljs-string">'field1'</span>, { <span class="hljs-attr">validators</span>: [ <span class="hljs-string">'required'</span>, myLocalValidator ] });
+</code></pre>
 				<a href="#demo" id="demo" style="color: inherit; text-decoration: none;">
 					<h3>Demo</h3>
 				</a>

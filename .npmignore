@@ -1,6 +1,7 @@
 node_modules
 docs
 src
+demo
 jest.config.js
 *.test.js
 .vscode
