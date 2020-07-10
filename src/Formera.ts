@@ -90,7 +90,7 @@ export default class Formera {
 
     this.state.fieldStates[name].previousState = clone(this.state.fieldStates[name]);
 
-    this.state.fieldSubscriptions[name] = [];
+    this.state.fieldSubscriptions[name] = {};
 
     this.state.fieldEntries[name].handler = {
       subscribe: (callback: FieldSubscriptionCallback, options?: FieldSubscriptionOptions) => this.fieldSubscribe(name, callback, options),
@@ -531,14 +531,29 @@ export default class Formera {
    * @param callback Callback to be called when field state changes.
    * @param options Parts of the state to listen.
    */
-  public fieldSubscribe(field: string, callback: FieldSubscriptionCallback, options?: FieldSubscriptionOptions): void {
-    const { fieldEntries, fieldSubscriptions } = this.state;
+  public fieldSubscribe(field: string, callback: FieldSubscriptionCallback, options?: FieldSubscriptionOptions): number {
+    const { fieldSubscriptions } = this.state;
     options = options || { ...defaultFieldSubscriptionOptions };
-    fieldSubscriptions[field].push({ callback, options });
 
-    //Forcing notify the first time if field has validators.
-    const { validators } = fieldEntries[field];
+    const subscriptionCount = Object.keys(fieldSubscriptions[field]).length;
+
+    const subscriptionkey = subscriptionCount + 1;
+
+    fieldSubscriptions[field][subscriptionkey] = { callback, options };
+
+    return subscriptionkey;
   }
+
+    /**
+   * Do the field unsubscription.
+   * @param field Field name.
+   * @param subscriptionkey The subscriptionkey returned in subscribe.
+   */
+  public fieldUnsubscribe(field: string, subscriptionkey: number): void {
+    const { fieldSubscriptions } = this.state;
+    delete fieldSubscriptions[field][subscriptionkey] 
+  }
+
   /**
    * Do the form subscription.
    * @param callback Callback to be called when form state changes.
@@ -588,7 +603,7 @@ export default class Formera {
    * @param field Field name.
    * @param changes State changes to be compared..
    */
-  private notifyFieldSubscribers(field: string, changes?: string[]) {
+  public notifyFieldSubscribers(field: string, changes?: string[]) {
     const { fieldSubscriptions } = this.state;
 
     const currentState = this.getFieldState(field);
@@ -598,7 +613,9 @@ export default class Formera {
     const subscriptions = fieldSubscriptions[field];
 
     if (subscriptions) {
-      for (const { options, callback } of subscriptions) {
+      for (const subscriptionKey in subscriptions) {
+        const { options, callback } = subscriptions[subscriptionKey];
+
         if (changes.some(change => options[change])) {
           callback(currentState);
         }

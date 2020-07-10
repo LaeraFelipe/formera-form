@@ -55,7 +55,7 @@ export interface InternalState {
   /**Field entries. */
   fieldEntries: { [field: string]: FieldEntry },
   /**Field subscriptions; */
-  fieldSubscriptions: { [field: string]: FieldSubscription[] },
+  fieldSubscriptions: { [field: string]: { [key: string]: FieldSubscription } },
   /**Form subscriptions. */
   formSubscriptions: FormSubscription[],
   /**Validator functions. */
@@ -186,7 +186,7 @@ export interface ValidationFunctionSource {
   [name: string]: ValidatorFunction,
 }
 
-/**Source of validation messages. */ 
+/**Source of validation messages. */
 export interface ValidationMessageSource {
   /**Validator message. */
   [name: string]: string,
