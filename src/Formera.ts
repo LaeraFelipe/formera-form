@@ -413,9 +413,9 @@ export default class Formera {
 
         if (typeof validator === "object") {
           validatorName = validator.name;
-          validatorParams = validator.params;
+          validatorParams = validator.params ?? [];
           debounce = validator.debounce;
-          validatorFunction = validator.func || validatorsFunctions[validatorName];
+          validatorFunction = validator.func ?? validatorsFunctions[validatorName];
         } else {
           validatorName = validator;
           validatorFunction = validatorsFunctions[validatorName];
