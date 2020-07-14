@@ -288,7 +288,7 @@ export default class Formera {
 
     if (field) {
       const fieldState = fieldStates[field];
-      const fieldChanges = setState<FieldState>(fieldState, { disabled: enable });
+      const fieldChanges = setState<FieldState>(fieldState, { disabled: !enable });
       this.notifyFieldSubscribers(field, fieldChanges);
     } else {
       this.notifyFormSubscribers();
@@ -433,9 +433,9 @@ export default class Formera {
               fieldEntry.debounceRefs[validatorName] ||
               debouncePromise(validatorFunction, debounce);
 
-            result = fieldEntry.debounceRefs[validatorName](fieldStateWithValue, formState.values, validatorParams);
+            result = fieldEntry.debounceRefs[validatorName](fieldStateWithValue, this, ...validatorParams);
           } else {
-            result = validatorFunction(fieldStateWithValue, formState.values, validatorParams);
+            result = validatorFunction(fieldStateWithValue, this, ...validatorParams);
           }
 
           const isValidatorPromisse = (result && result.then && typeof result.then) === "function";
@@ -544,14 +544,14 @@ export default class Formera {
     return subscriptionkey;
   }
 
-    /**
-   * Do the field unsubscription.
-   * @param field Field name.
-   * @param subscriptionkey The subscriptionkey returned in subscribe.
-   */
+  /**
+ * Do the field unsubscription.
+ * @param field Field name.
+ * @param subscriptionkey The subscriptionkey returned in subscribe.
+ */
   public fieldUnsubscribe(field: string, subscriptionkey: number): void {
     const { fieldSubscriptions } = this.state;
-    delete fieldSubscriptions?.[field]?.[subscriptionkey] 
+    delete fieldSubscriptions?.[field]?.[subscriptionkey]
   }
 
   /**
@@ -571,6 +571,10 @@ export default class Formera {
     const { fieldStates, formState } = this.state;
 
     const fieldState = fieldStates[field];
+
+    if (fieldState === undefined) {
+      return undefined;
+    }
 
     const value = get(formState.values, field) || '';
     const initial = get(formState.values, field) || '';

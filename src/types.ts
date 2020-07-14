@@ -1,3 +1,5 @@
+import Formera from ".";
+
 /**Common state between field and form.*/
 export interface State<T> {
   /**Whether the form or field is active. */
@@ -178,7 +180,7 @@ export interface FieldValidator {
  * @param formValuies Current form values.
  * @param params Parameters entered.
  */
-export type ValidatorFunction = (fieldState: FieldState, formValues: any, params?: any) => string | Promise<string>;
+export type ValidatorFunction = (fieldState: FieldState, formera: Formera, ...params: Array<any>) => string | Promise<string>;
 
 /**Source of validator functions. */
 export interface ValidationFunctionSource {
