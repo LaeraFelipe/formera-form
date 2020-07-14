@@ -188,15 +188,18 @@ export default class Formera {
     //Validating and notifying current field.
     if (field) {
       const fieldEntry = fieldEntries[field];
-      let fieldState = fieldStates[field];
 
-      const fieldChanges = setState<FieldState>(fieldState, { pristine: isPristine });
-      if (valueChanged) fieldChanges.push('value');
+      if (fieldEntry) {
+        let fieldState = fieldStates[field];
 
-      if (fieldEntry.validationType === "onChange") {
-        this.validateField(field);
-      };
-      this.notifyFieldSubscribers(field, fieldChanges);
+        const fieldChanges = setState<FieldState>(fieldState, { pristine: isPristine });
+        if (valueChanged) fieldChanges.push('value');
+
+        if (fieldEntry.validationType === "onChange") {
+          this.validateField(field);
+        };
+        this.notifyFieldSubscribers(field, fieldChanges);
+      }
     }
 
     //Validating and notifying all childs.
