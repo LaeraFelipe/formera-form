@@ -502,18 +502,25 @@ export default class Formera {
     }
   }
 
-  /**Submmit the form. */
-  public async submit() {
-    const { options, formState, fieldStates } = this.state;
-    const { onSubmit, allowInvalidSubmit } = options;
+  /**Set all fields blur. */
+  public setAllFieldsTouched() {
+    const { fieldStates } = this.state;
 
     //Setting all fields touched.
     for (const field in fieldStates) {
       setState<FieldState>(fieldStates[field], { touched: true });
     }
 
+    this.notifyAllSubscribers();
+  }
+
+  /**Submmit the form. */
+  public async submit() {
+    const { options, formState } = this.state;
+    const { onSubmit, allowInvalidSubmit } = options;
+
     if (!formState.valid && !allowInvalidSubmit) {
-      this.notifyAllSubscribers();
+      this.setAllFieldsTouched();
       return;
     }
 
