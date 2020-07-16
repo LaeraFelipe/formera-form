@@ -219,7 +219,7 @@ export default class Formera {
 
           let nestedFieldChanges = setState<FieldState>(nestedFieldState,
             {
-              pristine: isNestedPristine
+              pristine: isNestedPristine,
             }
           );
 

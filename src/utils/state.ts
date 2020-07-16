@@ -42,7 +42,7 @@ export function setState<T extends State<T>>(state: T, changes: { [key in keyof 
 		if (!isEqual(previousValue, changes[key])) {
 			calculatedChanges.push(getChangedKey(key));
 		}
-		set(state.previousState, key, previousValue);
+		set(state.previousState, key, clone(previousValue));
 		set(state, key, changes[key]);
 	}
 
