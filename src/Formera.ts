@@ -573,6 +573,11 @@ export default class Formera {
     this.state.formSubscriptions.push({ callback, options });
   }
 
+  /**Returns an array with all fields. */
+  public getFields(): string[] {
+    return Object.keys(this.state.fieldEntries);
+  }
+
   /**
    * Return the builded field state with current and initial value. 
    * @param field Field name.
