@@ -73,6 +73,10 @@ export default class Formera {
 
     const { formState, options: formOptions } = this.state;
 
+    if (this.state.fieldEntries[name] !== undefined) {
+      return this.state.fieldEntries[name].handler;
+    }
+
     this.log('FIELD OPTIONS', options);
 
     this.state.fieldEntries[name] = {
