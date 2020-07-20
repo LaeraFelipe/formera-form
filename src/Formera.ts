@@ -341,6 +341,26 @@ export default class Formera {
     this.notifyFieldSubscribers(field, changes);
   }
 
+  /**Returns if the field has nested fields with error. */
+  public hasNestedErrors(field: string): boolean {
+    if (field == null || field === '') {
+      throw new Error('You should pass a field to check nested errors.');
+    }
+
+    const { fieldEntries, fieldStates } = this.state;
+
+    for (const nested in fieldEntries) {
+      if (isFieldChild(field, nested)) {
+        const fieldState = fieldStates[nested];
+        if (!fieldState.valid) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
+
   /**
    * Finish field validation. 
    * @param field Field name.
