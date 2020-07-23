@@ -585,7 +585,10 @@ export default class Formera {
  */
   public fieldUnsubscribe(field: string, subscriptionkey: number): void {
     const { fieldSubscriptions } = this.state;
-    delete fieldSubscriptions?.[field]?.[subscriptionkey]
+
+    if (fieldSubscriptions[field]?.[subscriptionkey]) {
+      delete fieldSubscriptions[field][subscriptionkey]
+    }
   }
 
   /**
