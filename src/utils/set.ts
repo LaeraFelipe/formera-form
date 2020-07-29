@@ -12,7 +12,7 @@ export default function set(object: any, path: string, value: any) {
     let valueToSet: any;
 
     if (index != lastIndex) {
-      valueToSet = current[key] !== undefined
+      valueToSet = current[key] != null
         ? current[key]
         : (!isNaN(+arrayPath[index + 1]) ? [] : {});
     } else {
