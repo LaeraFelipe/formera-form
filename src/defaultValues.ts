@@ -43,7 +43,7 @@ export const defaultFieldSubscriptionOptions: FieldSubscriptionOptions = {
   errors: true,
   value: true,
   initial: false,
-  data: false
+  data: true
 }
 
 export const defaultFormSubscriptionOptions: FormSubscriptionOptions = {
