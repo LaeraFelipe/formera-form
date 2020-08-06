@@ -619,7 +619,7 @@ export default class Formera {
     }
 
     const value = get(formState.values, field) || '';
-    const initial = get(formState.values, field) || '';
+    const initial = get(formState.initialValues, field) || '';
 
     const previousValue = get(formState.previousState.values, field) || '';
     const previousInitial = get(formState.previousState.values, field) || '';
