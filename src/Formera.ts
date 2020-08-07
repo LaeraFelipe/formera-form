@@ -36,7 +36,7 @@ export default class Formera {
     this.state.fieldEntries = {};
 
     this.state.formState = {
-      ...defaultFormState,
+      ...clone(defaultFormState),
       initialValues: clone(options.initialValues),
       values: clone(options.initialValues),
     };
