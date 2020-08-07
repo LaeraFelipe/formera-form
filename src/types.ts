@@ -57,7 +57,7 @@ export interface InternalState {
   /**Field entries. */
   fieldEntries: { [field: string]: FieldEntry },
   /**Field subscriptions; */
-  fieldSubscriptions: { [field: string]: { [key: string]: FieldSubscription } },
+  fieldSubscriptions: { [field: string]: { index: number, subscriptions: { [key: string]: FieldSubscription } } },
   /**Form subscriptions. */
   formSubscriptions: FormSubscription[],
   /**Validator functions. */

@@ -94,7 +94,7 @@ export default class Formera {
 
     this.state.fieldStates[name].previousState = clone(this.state.fieldStates[name]);
 
-    this.state.fieldSubscriptions[name] = {};
+    this.state.fieldSubscriptions[name] = { index: 0, subscriptions: {} };
 
     this.state.fieldEntries[name].handler = {
       subscribe: (callback: FieldSubscriptionCallback, options?: FieldSubscriptionOptions) => this.fieldSubscribe(name, callback, options),
@@ -569,13 +569,9 @@ export default class Formera {
     const { fieldSubscriptions } = this.state;
     options = options || { ...defaultFieldSubscriptionOptions };
 
-    const subscriptionCount = Object.keys(fieldSubscriptions[field]).length;
+    fieldSubscriptions[field].subscriptions[++fieldSubscriptions[field].index] = { callback, options };
 
-    const subscriptionkey = subscriptionCount + 1;
-
-    fieldSubscriptions[field][subscriptionkey] = { callback, options };
-
-    return subscriptionkey;
+    return fieldSubscriptions[field].index;
   }
 
   /**
@@ -586,8 +582,8 @@ export default class Formera {
   public fieldUnsubscribe(field: string, subscriptionkey: number): void {
     const { fieldSubscriptions } = this.state;
 
-    if (fieldSubscriptions[field]?.[subscriptionkey]) {
-      delete fieldSubscriptions[field][subscriptionkey]
+    if (fieldSubscriptions[field].subscriptions?.[subscriptionkey]) {
+      delete fieldSubscriptions[field].subscriptions[subscriptionkey]
     }
   }
 
@@ -656,7 +652,7 @@ export default class Formera {
 
     changes = changes || getStateChanges<FieldState>(currentState);
 
-    const subscriptions = fieldSubscriptions[field];
+    const subscriptions = fieldSubscriptions[field].subscriptions;
 
     if (subscriptions) {
       for (const subscriptionKey in subscriptions) {
