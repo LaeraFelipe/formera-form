@@ -1,6 +1,6 @@
 import initializeValidators from './validation';
 import { defaultFormState, defaultFieldState, defaultFieldSubscriptionOptions, defaultFormSubscriptionOptions, defaultFieldRegisterOptions, defaultFormOptions } from "./defaultValues";
-import { debouncePromise, clone, cloneState, get, setState, isEqual, merge, isFieldChild } from "./utils";
+import { debouncePromise, clone, cloneState, get, setState, isEqual, merge, isFieldChild, set } from "./utils";
 import { FormState, FormOptions, FieldSubscriptionOptions, FormSubscriptionCallback, FieldSubscriptionCallback, FormSubscriptionOptions, FieldRegisterOptions, FieldState, InternalState, FieldHandler, ValidatorFunction } from "./types";
 import { getStateChanges } from './utils/state';
 
@@ -130,6 +130,8 @@ export default class Formera {
       delete this.state.fieldEntries[field];
       delete this.state.fieldStates[field];
       delete this.state.fieldSubscriptions[field];
+
+      this.recalcFormValidation();
     }
   }
 
@@ -704,6 +706,23 @@ export default class Formera {
     for (const field in fieldEntries) {
       this.notifyFieldSubscribers(field);
     }
+  }
+
+  /**Recalc form validation. */
+  private recalcFormValidation() {
+    let valid = true, errors = {};
+    for (const field in this.state.fieldStates) {
+      const fieldState = this.state.fieldStates[field];
+
+      if (!fieldState.valid) {
+        valid = fieldState.valid;
+        set(errors, field, fieldState.errors);
+      }
+    }
+
+    const changes = setState<FormState>(this.state.formState, { valid, errors });
+
+    this.notifyFormSubscribers(changes);
   }
 
   /**
