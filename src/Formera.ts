@@ -74,12 +74,14 @@ export default class Formera {
     const { formState, options: formOptions } = this.state;
 
     if (this.state.fieldEntries[name] !== undefined) {
+      this.state.fieldEntries[name].entries++;
       return this.state.fieldEntries[name].handler;
     }
 
     this.log('FIELD OPTIONS', options);
 
     this.state.fieldEntries[name] = {
+      entries: 1,
       ...defaultFieldRegisterOptions,
       ...options,
       validationType: options.validationType || formOptions.validationType,
@@ -124,9 +126,11 @@ export default class Formera {
    * @param field Field name.
    */
   public unregisterField(field: string) {
-    delete this.state.fieldEntries[field];
-    delete this.state.fieldStates[field]
-    delete this.state.fieldSubscriptions[field]
+    if (--this.state.fieldEntries[field].entries === 0) {
+      delete this.state.fieldEntries[field];
+      delete this.state.fieldStates[field];
+      delete this.state.fieldSubscriptions[field];
+    }
   }
 
   /**Reset with initial values. */
@@ -327,7 +331,7 @@ export default class Formera {
    * @param values Data to set.
    */
   public setFieldData(field: string, dataName: string, value: any) {
-    this.initDebug('SET DATA')
+    this.initDebug('SET DATA', field)
     const { fieldStates } = this.state;
     const fieldState = fieldStates[field];
     const currentData = fieldStates[field].data || {};
@@ -372,7 +376,6 @@ export default class Formera {
     const { fieldStates, formState } = this.state;
 
     const fieldState = fieldStates[field];
-
 
     const fieldChanges = setState<FieldState>(fieldState, { validating: false, valid: !error, errors, error });
 
@@ -465,7 +468,7 @@ export default class Formera {
             result = validatorFunction(fieldStateWithValue, this, ...validatorParams);
           }
 
-          const isValidatorPromisse = (result && result.then && typeof result.then) === "function";
+          const isValidatorPromisse = typeof result?.then === "function";
 
           //If validator function has result.
           if (result) {
@@ -596,11 +599,6 @@ export default class Formera {
     this.state.formSubscriptions.push({ callback, options });
   }
 
-  /**Returns an array with all fields. */
-  public getFields(): string[] {
-    return Object.keys(this.state.fieldEntries);
-  }
-
   /**
    * Return the builded field state with current and initial value. 
    * @param field Field name.
@@ -635,9 +633,19 @@ export default class Formera {
     };
   }
 
+  /**Returns an array with all fields. */
+  public getFields(): string[] {
+    return Object.keys(this.state.fieldEntries);
+  }
+
   /**Return form state. */
   public getState() {
     return this.state.formState;
+  }
+
+  /**Returns a value from form values by path. */
+  public getValue(path?: string) {
+    return get(this.state.formState.values, path);
   }
 
   /**

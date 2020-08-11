@@ -96,6 +96,8 @@ export interface FieldRegisterOptions {
 
 /**Field entry. */
 export interface FieldEntry extends FieldRegisterOptions {
+  /**Entries count. */
+  entries: number,
   /**Function group used to change and subscribe to field-related values.*/
   handler?: FieldHandler,
   /**Field validator debounce references. */
