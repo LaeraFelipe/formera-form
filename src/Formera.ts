@@ -138,8 +138,8 @@ export default class Formera {
   /**Reset with initial values. */
   public reset(initialValues: any) {
     const { formState } = this.state;
-    formState.initialValues = initialValues;
-    this.change(null, initialValues);
+    formState.initialValues = clone(initialValues);
+    this.change(null, clone(initialValues));
   }
 
   /**
