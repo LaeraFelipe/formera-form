@@ -74,7 +74,12 @@ export default class Formera {
     const { formState, options: formOptions } = this.state;
 
     if (this.state.fieldEntries[name] !== undefined) {
+      this.state.fieldEntries[name] = {
+        ...this.state.fieldEntries[name],
+        ...options
+      }
       this.state.fieldEntries[name].entries++;
+      this.validateField(name, false);
       return this.state.fieldEntries[name].handler;
     }
 
@@ -528,6 +533,8 @@ export default class Formera {
             this.finishFieldValidation(field, validationError.message, errors, notifySubscribers);
           })
       }
+    } else {
+      this.finishFieldValidation(field, undefined, {}, notifySubscribers);
     }
   }
 
