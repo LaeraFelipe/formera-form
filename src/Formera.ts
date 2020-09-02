@@ -76,7 +76,9 @@ export default class Formera {
     if (this.state.fieldEntries[name] !== undefined) {
       this.state.fieldEntries[name] = {
         ...this.state.fieldEntries[name],
-        ...options
+        ...options,
+        validationType: options.validationType ?? formOptions.validationType,
+      stopValidationOnFirstError: options.stopValidationOnFirstError ?? defaultFieldRegisterOptions.stopValidationOnFirstError
       }
       this.state.fieldEntries[name].entries++;
       this.validateField(name, false);
@@ -89,8 +91,8 @@ export default class Formera {
       entries: 1,
       ...defaultFieldRegisterOptions,
       ...options,
-      validationType: options.validationType || formOptions.validationType,
-      stopValidationOnFirstError: options.stopValidationOnFirstError || defaultFieldRegisterOptions.stopValidationOnFirstError
+      validationType: options.validationType ?? formOptions.validationType,
+      stopValidationOnFirstError: options.stopValidationOnFirstError ?? defaultFieldRegisterOptions.stopValidationOnFirstError
     };
 
     this.state.fieldStates[name] = {
