@@ -21,7 +21,7 @@ function isArrayEqual(value: Array<any>, other: Array<any>): boolean {
 /**Compare objects. */
 function isObjectEqual(value: any, other: any): boolean {
   let keys = Object.keys(value);
-  let otherKeys = Object.keys(value);
+  let otherKeys = Object.keys(other);
 
   if (keys.length !== otherKeys.length) return false;
 
