@@ -68,12 +68,12 @@ export interface InternalState {
 export interface FormOptions {
   /**Initial values. */
   initialValues: any,
-  /**If form is disabled. */
-  disabled: boolean,
   /**Submit callback.
    * @param values Current form values.
    */
   onSubmit: (formState: FormState) => any,
+  /**If form is disabled. */
+  disabled?: boolean,
   /**Validator functions for use by fields. */
   customValidators?: ValidationFunctionSource,
   /**Validation messages for use by standard validators. */
