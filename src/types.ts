@@ -68,6 +68,8 @@ export interface InternalState {
 export interface FormOptions {
   /**Initial values. */
   initialValues: any,
+  /**If form is disabled. */
+  disabled: boolean,
   /**Submit callback.
    * @param values Current form values.
    */

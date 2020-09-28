@@ -97,6 +97,7 @@ export default class Formera {
 
     this.state.fieldStates[name] = {
       ...defaultFieldState,
+      disabled: this.state.options.disabled,
       initial: clone(get(formState.values, name)),
       value: clone(get(formState.values, name)) || ''
     }
@@ -311,6 +312,7 @@ export default class Formera {
       const fieldChanges = setState<FieldState>(fieldState, { disabled: !enable });
       this.notifyFieldSubscribers(field, fieldChanges);
     } else {
+      this.state.options.disabled = !enable;
       this.notifyFormSubscribers();
     }
 

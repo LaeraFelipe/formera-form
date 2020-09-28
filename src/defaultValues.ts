@@ -61,6 +61,7 @@ export const defaultFormSubscriptionOptions: FormSubscriptionOptions = {
 
 export const defaultFormOptions: FormOptions = {
   debug: false,
+  disabled: false,
   allowInvalidSubmit: false,
   validationType: 'onChange',
   initialValues: {}
