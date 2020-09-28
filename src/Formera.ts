@@ -318,7 +318,7 @@ export default class Formera {
       for (const nested in fieldEntries) {
         if (isFieldChild(field, nested)) {
           const nestedState = fieldStates[nested];
-          const nestedChanges = setState<FieldState>(nestedState, { disabled: enable });
+          const nestedChanges = setState<FieldState>(nestedState, { disabled: !enable });
           this.notifyFieldSubscribers(nested, nestedChanges);
         }
       }
