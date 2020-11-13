@@ -78,7 +78,7 @@ export default class Formera {
         ...this.state.fieldEntries[name],
         ...options,
         validationType: options.validationType ?? formOptions.validationType,
-      stopValidationOnFirstError: options.stopValidationOnFirstError ?? defaultFieldRegisterOptions.stopValidationOnFirstError
+        stopValidationOnFirstError: options.stopValidationOnFirstError ?? defaultFieldRegisterOptions.stopValidationOnFirstError
       }
       this.state.fieldEntries[name].entries++;
       this.validateField(name, false);
@@ -625,11 +625,11 @@ export default class Formera {
       return undefined;
     }
 
-    const value = get(formState.values, field) || '';
-    const initial = get(formState.initialValues, field) || '';
+    const value = get(formState.values, field) ?? '';
+    const initial = get(formState.initialValues, field) ?? '';
 
-    const previousValue = get(formState.previousState.values, field) || '';
-    const previousInitial = get(formState.previousState.values, field) || '';
+    const previousValue = get(formState.previousState.values, field) ?? '';
+    const previousInitial = get(formState.previousState.values, field) ?? '';
 
     const { submitting } = formState;
 
