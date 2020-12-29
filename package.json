@@ -1,13 +1,13 @@
 {
   "name": "formera-form",
-  "version": "1.0.64",
+  "version": "1.0.65",
   "description": "",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",
     "test": "jest",
-    "doc" : "npx typedoc",
+    "doc": "npx typedoc",
     "prepublish": "tsc && npx jest"
   },
   "author": "Felipe Laera",

@@ -94,6 +94,8 @@ export interface FieldRegisterOptions {
   validators?: Array<string | FieldValidator>,
   /**Whether validation should stop at the first error. */
   stopValidationOnFirstError?: boolean,
+  /**Function to compare field changes. */
+  compareChanges?: (previousValue: any, value: any) => Boolean
 }
 
 /**Field entry. */

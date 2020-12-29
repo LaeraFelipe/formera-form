@@ -185,9 +185,11 @@ export default class Formera {
 
     const hasChilds = this.hasChild(field);
 
+    const compareFn = (field && fieldEntries[field].compareChanges) || isEqual; 
+
     const previousValue = get(formState.values, field);
-    const valueChanged = !isEqual(previousValue, value);
-    const isPristine = isEqual(get(formState.initialValues, field) || '', value);
+    const valueChanged = !compareFn(previousValue, value);
+    const isPristine = compareFn(get(formState.initialValues, field) || '', value);
 
     //Getting the path to ser field value.
     const keyToSet = field ? `values.${field}` : 'values';
