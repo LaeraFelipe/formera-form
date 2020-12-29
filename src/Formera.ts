@@ -185,7 +185,7 @@ export default class Formera {
 
     const hasChilds = this.hasChild(field);
 
-    const compareFn = (field && fieldEntries[field].compareChanges) || isEqual; 
+    const compareFn = (field && fieldEntries[field].compareChanges) || isEqual;
 
     const previousValue = get(formState.values, field);
     const valueChanged = !compareFn(previousValue, value);
@@ -199,7 +199,11 @@ export default class Formera {
       formState,
       {
         [keyToSet]: value,
-        pristine: !isPristine ? isPristine : isEqual(formState.initialValues, formState.values)
+        pristine: !isPristine ?
+          isPristine :
+          hasChilds ?
+            isEqual(formState.initialValues, formState.values) :
+            formState.pristine
       }
     );
 
