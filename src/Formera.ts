@@ -1,11 +1,40 @@
-import initializeValidators from './validation';
-import { defaultFormState, defaultFieldState, defaultFieldSubscriptionOptions, defaultFormSubscriptionOptions, defaultFieldRegisterOptions, defaultFormOptions } from "./defaultValues";
-import { debouncePromise, clone, cloneState, get, setState, isEqual, merge, isFieldChild, set } from "./utils";
-import { FormState, FormOptions, FieldSubscriptionOptions, FormSubscriptionCallback, FieldSubscriptionCallback, FormSubscriptionOptions, FieldRegisterOptions, FieldState, InternalState, FieldHandler, ValidatorFunction } from "./types";
-import { getStateChanges } from './utils/state';
+import initializeValidators from "./validation";
+import {
+  defaultFormState,
+  defaultFieldState,
+  defaultFieldSubscriptionOptions,
+  defaultFormSubscriptionOptions,
+  defaultFieldRegisterOptions,
+  defaultFormOptions,
+} from "./defaultValues";
+import {
+  debouncePromise,
+  clone,
+  cloneState,
+  get,
+  setState,
+  isEqual,
+  merge,
+  isFieldChild,
+  set,
+} from "./utils";
+import {
+  FormState,
+  FormOptions,
+  FieldSubscriptionOptions,
+  FormSubscriptionCallback,
+  FieldSubscriptionCallback,
+  FormSubscriptionOptions,
+  FieldRegisterOptions,
+  FieldState,
+  InternalState,
+  FieldHandler,
+  ValidatorFunction,
+} from "./types";
+import { getStateChanges } from "./utils/state";
 
 /**Timer identifier to log. */
-const EXECUTION_TIMER_IDENTIFIER = '[FORMERA] EXECUTION TIME: ';
+const EXECUTION_TIMER_IDENTIFIER = "[FORMERA] EXECUTION TIME: ";
 
 /**Formera class. */
 export default class Formera {
@@ -14,7 +43,7 @@ export default class Formera {
 
   /**Return if a form is in debug mode. */
   get debug() {
-    return this.state.options.debug
+    return this.state.options.debug;
   }
 
   /**Initialize a form.
@@ -25,13 +54,16 @@ export default class Formera {
 
     this.state.options = merge(defaultFormOptions, options);
 
-    this.initDebug('INIT');
+    this.initDebug("INIT");
 
-    this.log('FORM OPTIONS', this.state.options);
+    this.log("FORM OPTIONS", this.state.options);
 
     const { customValidators, customValidationMessages } = this.state.options;
 
-    this.state.validators = initializeValidators(customValidators, customValidationMessages);
+    this.state.validators = initializeValidators(
+      customValidators,
+      customValidationMessages
+    );
 
     this.state.fieldEntries = {};
 
@@ -68,8 +100,11 @@ export default class Formera {
    * @param options Field registration options.
    * @returns Function group used to change and subscribe to field-related values.
    */
-  public registerField(name: string, options: FieldRegisterOptions = {}): FieldHandler {
-    this.initDebug('REGISTER', name);
+  public registerField(
+    name: string,
+    options: FieldRegisterOptions = {}
+  ): FieldHandler {
+    this.initDebug("REGISTER", name);
 
     const { formState, options: formOptions } = this.state;
 
@@ -78,51 +113,61 @@ export default class Formera {
         ...this.state.fieldEntries[name],
         ...options,
         validationType: options.validationType ?? formOptions.validationType,
-        stopValidationOnFirstError: options.stopValidationOnFirstError ?? defaultFieldRegisterOptions.stopValidationOnFirstError
-      }
+        stopValidationOnFirstError:
+          options.stopValidationOnFirstError ??
+          defaultFieldRegisterOptions.stopValidationOnFirstError,
+      };
       this.state.fieldEntries[name].entries++;
       this.validateField(name, false);
       return this.state.fieldEntries[name].handler;
     }
 
-    this.log('FIELD OPTIONS', options);
+    this.log("FIELD OPTIONS", options);
 
     this.state.fieldEntries[name] = {
       entries: 1,
       ...defaultFieldRegisterOptions,
       ...options,
       validationType: options.validationType ?? formOptions.validationType,
-      stopValidationOnFirstError: options.stopValidationOnFirstError ?? defaultFieldRegisterOptions.stopValidationOnFirstError
+      stopValidationOnFirstError:
+        options.stopValidationOnFirstError ??
+        defaultFieldRegisterOptions.stopValidationOnFirstError,
     };
 
     this.state.fieldStates[name] = {
       ...defaultFieldState,
       disabled: this.state.options.disabled,
       initial: clone(get(formState.values, name)),
-      value: clone(get(formState.values, name)) || ''
-    }
+      value: clone(get(formState.values, name)) || "",
+    };
 
-    this.state.fieldStates[name].previousState = clone(this.state.fieldStates[name]);
+    this.state.fieldStates[name].previousState = clone(
+      this.state.fieldStates[name]
+    );
 
     this.state.fieldSubscriptions[name] = { index: 0, subscriptions: {} };
 
     this.state.fieldEntries[name].handler = {
-      subscribe: (callback: FieldSubscriptionCallback, options?: FieldSubscriptionOptions) => this.fieldSubscribe(name, callback, options),
+      subscribe: (
+        callback: FieldSubscriptionCallback,
+        options?: FieldSubscriptionOptions
+      ) => this.fieldSubscribe(name, callback, options),
       onChange: (value: any) => this.change(name, value),
       onBlur: () => this.blur(name),
       onFocus: () => this.focus(name),
       enable: () => this.enable(name),
       disable: () => this.disable(name),
-      setData: (dataName: string, value: any) => this.setFieldData(name, dataName, value)
-    }
+      setData: (dataName: string, value: any) =>
+        this.setFieldData(name, dataName, value),
+    };
 
     //Doing the first validation in field.
     if (options.validators && options.validators.length) {
       this.validateField(name, false);
     }
 
-    this.log('FIELD ENTRIE', this.state.fieldEntries[name]);
-    this.log('FIELD STATE', this.state.fieldStates[name]);
+    this.log("FIELD ENTRIE", this.state.fieldEntries[name]);
+    this.log("FIELD STATE", this.state.fieldStates[name]);
 
     this.endDebug();
 
@@ -130,7 +175,7 @@ export default class Formera {
   }
 
   /**
-   * Unregister the field. 
+   * Unregister the field.
    * @param field Field name.
    */
   public unregisterField(field: string) {
@@ -151,14 +196,14 @@ export default class Formera {
   }
 
   /**
-   * Do the focus actions in a field state. 
+   * Do the focus actions in a field state.
    * @param field Field name.
    */
   public focus(field: string): void {
-    this.initDebug('FOCUS', field);
+    this.initDebug("FOCUS", field);
 
-    if (field == null || field === '') {
-      throw new Error('You should pass a field to focus.');
+    if (field == null || field === "") {
+      throw new Error("You should pass a field to focus.");
     }
 
     let { formState, fieldStates } = this.state;
@@ -174,12 +219,12 @@ export default class Formera {
   }
 
   /**
-   * Do the change actions in a field state. 
+   * Do the change actions in a field state.
    * @param field Field name.
    * @param value Value to set.
    */
   public change(field: string, value: any): void {
-    this.initDebug('CHANGE', field);
+    this.initDebug("CHANGE", field);
 
     const { formState, fieldStates, fieldEntries } = this.state;
 
@@ -189,23 +234,26 @@ export default class Formera {
 
     const previousValue = get(formState.values, field);
     const valueChanged = !compareFn(previousValue, value);
-    const isPristine = compareFn(get(formState.initialValues, field) || '', value);
+    const isPristine = compareFn(
+      get(formState.initialValues, field) || "",
+      value
+    );
 
     //Getting the path to ser field value.
-    const keyToSet = field ? `values.${field}` : 'values';
+    const keyToSet = field ? `values.${field}` : "values";
 
     //Changing formstate.
-    const formChanges = setState<FormState>(
-      formState,
-      {
-        [keyToSet]: value,
-        pristine: !isPristine ?
-          isPristine :
-          hasChilds ?
-            isEqual(formState.initialValues, formState.values) :
-            formState.pristine
-      }
-    );
+    let formChanges = setState<FormState>(formState, {
+      [keyToSet]: value,
+    });
+
+    if (isPristine !== formState.pristine) {
+      formChanges = formChanges.concat(
+        setState<FormState>(formState, {
+          pristine: isEqual(formState.initialValues, formState.values),
+        })
+      );
+    }
 
     this.notifyFormSubscribers(formChanges);
 
@@ -216,12 +264,14 @@ export default class Formera {
       if (fieldEntry) {
         let fieldState = fieldStates[field];
 
-        const fieldChanges = setState<FieldState>(fieldState, { pristine: isPristine });
-        if (valueChanged) fieldChanges.push('value');
+        const fieldChanges = setState<FieldState>(fieldState, {
+          pristine: isPristine,
+        });
+        if (valueChanged) fieldChanges.push("value");
 
         if (fieldEntry.validationType === "onChange") {
           this.validateField(field);
-        };
+        }
         this.notifyFieldSubscribers(field, fieldChanges);
       }
     }
@@ -235,20 +285,21 @@ export default class Formera {
           const nestedFieldState = fieldStates[nested];
 
           const nestedValue = get(formState.values, nested);
-          const nestedPreviousValue = get(formState.previousState.values, nested);
+          const nestedPreviousValue = get(
+            formState.previousState.values,
+            nested
+          );
           const nestedInitialValue = get(formState.initialValues, nested);
 
           const isNestedPristine = isEqual(nestedValue, nestedInitialValue);
           const isNestedModified = !isEqual(nestedValue, nestedPreviousValue);
 
-          let nestedFieldChanges = setState<FieldState>(nestedFieldState,
-            {
-              pristine: isNestedPristine,
-            }
-          );
+          let nestedFieldChanges = setState<FieldState>(nestedFieldState, {
+            pristine: isNestedPristine,
+          });
 
           if (isNestedModified) {
-            nestedFieldChanges.push('value');
+            nestedFieldChanges.push("value");
           }
 
           this.notifyFieldSubscribers(nested, nestedFieldChanges);
@@ -264,14 +315,14 @@ export default class Formera {
   }
 
   /**
-   * Do the blur actions in a field state. 
+   * Do the blur actions in a field state.
    * @param field Field name.
    */
   public blur(field: string): void {
-    this.initDebug('BLUR', field);
+    this.initDebug("BLUR", field);
 
-    if (field == null || field === '') {
-      throw new Error('You should pass a field to blur.');
+    if (field == null || field === "") {
+      throw new Error("You should pass a field to blur.");
     }
 
     const { fieldEntries, fieldStates, formState } = this.state;
@@ -282,29 +333,29 @@ export default class Formera {
     const fieldChanges = setState<FieldState>(fieldState, {
       active: false,
       touched: true,
-      dirty: !fieldState.pristine
+      dirty: !fieldState.pristine,
     });
 
     const formChanges = setState<FormState>(formState, {
       active: true,
       touched: true,
-      dirty: !formState.pristine
-    })
+      dirty: !formState.pristine,
+    });
 
-    this.log('FIELDSTATE', fieldState);
+    this.log("FIELDSTATE", fieldState);
 
     this.endDebug();
 
     this.notifyFormSubscribers(formChanges);
     this.notifyFieldSubscribers(field, fieldChanges);
 
-    if (fieldEntry.validationType === 'onBlur') {
+    if (fieldEntry.validationType === "onBlur") {
       this.validateField(field);
     }
   }
 
   /**
-   * Enable field. 
+   * Enable field.
    * @param field Field name.
    * @param enable If the field shoud be enable or not.
    */
@@ -315,7 +366,9 @@ export default class Formera {
 
     if (field) {
       const fieldState = fieldStates[field];
-      const fieldChanges = setState<FieldState>(fieldState, { disabled: !enable });
+      const fieldChanges = setState<FieldState>(fieldState, {
+        disabled: !enable,
+      });
       this.notifyFieldSubscribers(field, fieldChanges);
     } else {
       this.state.options.disabled = !enable;
@@ -326,7 +379,9 @@ export default class Formera {
       for (const nested in fieldEntries) {
         if (isFieldChild(field, nested)) {
           const nestedState = fieldStates[nested];
-          const nestedChanges = setState<FieldState>(nestedState, { disabled: !enable });
+          const nestedChanges = setState<FieldState>(nestedState, {
+            disabled: !enable,
+          });
           this.notifyFieldSubscribers(nested, nestedChanges);
         }
       }
@@ -334,7 +389,7 @@ export default class Formera {
   }
 
   /**
-   * Disable field. 
+   * Disable field.
    * @param field Field name.
    */
   public disable(field?: string) {
@@ -348,14 +403,16 @@ export default class Formera {
    * @param values Data to set.
    */
   public setFieldData(field: string, dataName: string, value: any) {
-    this.initDebug('SET DATA', field)
+    this.initDebug("SET DATA", field);
     const { fieldStates } = this.state;
     const fieldState = fieldStates[field];
     const currentData = fieldStates[field].data || {};
 
-    const changes = setState<FieldState>(fieldState, { data: { ...currentData, [dataName]: value } });
+    const changes = setState<FieldState>(fieldState, {
+      data: { ...currentData, [dataName]: value },
+    });
 
-    this.log('FIELDSTATE', fieldState);
+    this.log("FIELDSTATE", fieldState);
 
     this.endDebug();
 
@@ -364,8 +421,8 @@ export default class Formera {
 
   /**Returns if the field has nested fields with error. */
   public hasNestedErrors(field: string): boolean {
-    if (field == null || field === '') {
-      throw new Error('You should pass a field to check nested errors.');
+    if (field == null || field === "") {
+      throw new Error("You should pass a field to check nested errors.");
     }
 
     const { fieldEntries, fieldStates } = this.state;
@@ -383,20 +440,31 @@ export default class Formera {
   }
 
   /**
-   * Finish field validation. 
+   * Finish field validation.
    * @param field Field name.
    * @param error Error.
    * @param errors All errors.
    * @param notifySubscribers If should notify subscribers.
    */
-  private finishFieldValidation(field: string, error: string, errors: { [validator: string]: string }, notifySubscribers: boolean = false) {
+  private finishFieldValidation(
+    field: string,
+    error: string,
+    errors: { [validator: string]: string },
+    notifySubscribers: boolean = false
+  ) {
     const { fieldStates, formState } = this.state;
 
     const fieldState = fieldStates[field];
 
-    const fieldChanges = setState<FieldState>(fieldState, { validating: false, valid: !error, errors, error });
+    const fieldChanges = setState<FieldState>(fieldState, {
+      validating: false,
+      valid: !error,
+      errors,
+      error,
+    });
 
-    let formValidating = false, formValid = true;
+    let formValidating = false,
+      formValid = true;
 
     //Calculating form validation props.
     for (const key in fieldStates) {
@@ -412,7 +480,7 @@ export default class Formera {
     const formChanges = setState<FormState>(formState, {
       validating: formValidating,
       valid: formValid,
-      [`errors.${field}`]: { ...errors }
+      [`errors.${field}`]: { ...errors },
     });
 
     if (notifySubscribers) {
@@ -428,7 +496,12 @@ export default class Formera {
    * @param notifySubscribers If should notify subscribers.
    */
   private validateField(field: string, notifySubscribers: boolean = true) {
-    const { fieldEntries, fieldStates, formState, validators: validatorsFunctions } = this.state;
+    const {
+      fieldEntries,
+      fieldStates,
+      formState,
+      validators: validatorsFunctions,
+    } = this.state;
 
     const fieldEntry = fieldEntries[field];
     const fieldState = fieldStates[field];
@@ -436,7 +509,7 @@ export default class Formera {
     const { validators, stopValidationOnFirstError } = fieldEntry;
 
     if (validators && validators.length) {
-      this.log('VALIDATORS', validators);
+      this.log("VALIDATORS", validators);
       //Setting validating true in fieldState and formState.
       let fieldChanges = setState<FieldState>(fieldState, { validating: true });
       let formChanges = setState<FormState>(formState, { validating: true });
@@ -462,7 +535,8 @@ export default class Formera {
           validatorName = validator.name;
           validatorParams = validator.params ?? [];
           debounce = validator.debounce;
-          validatorFunction = validator.func ?? validatorsFunctions[validatorName];
+          validatorFunction =
+            validator.func ?? validatorsFunctions[validatorName];
         } else {
           validatorName = validator;
           validatorFunction = validatorsFunctions[validatorName];
@@ -480,9 +554,17 @@ export default class Formera {
               fieldEntry.debounceRefs[validatorName] ||
               debouncePromise(validatorFunction, debounce);
 
-            result = fieldEntry.debounceRefs[validatorName](fieldStateWithValue, this, ...validatorParams);
+            result = fieldEntry.debounceRefs[validatorName](
+              fieldStateWithValue,
+              this,
+              ...validatorParams
+            );
           } else {
-            result = validatorFunction(fieldStateWithValue, this, ...validatorParams);
+            result = validatorFunction(
+              fieldStateWithValue,
+              this,
+              ...validatorParams
+            );
           }
 
           const isValidatorPromisse = typeof result?.then === "function";
@@ -508,40 +590,51 @@ export default class Formera {
             }
           }
         } else {
-          throw new Error(`The validator "${validatorName}" in field "${field}" dosent exist. `)
+          throw new Error(
+            `The validator "${validatorName}" in field "${field}" dosent exist. `
+          );
         }
       }
 
       //If has error and should stop validation on first error.
-      if ((error && stopValidationOnFirstError) || validatorPromises.length === 0) {
+      if (
+        (error && stopValidationOnFirstError) ||
+        validatorPromises.length === 0
+      ) {
         this.finishFieldValidation(field, error, errors, notifySubscribers);
         return;
       }
       //If are promises for validate.
       else {
-        Promise.all(validatorPromises).then(results => {
-          for (let index = 0; index < results.length; index++) {
-            const result = results[index];
+        Promise.all(validatorPromises)
+          .then((results) => {
+            for (let index = 0; index < results.length; index++) {
+              const result = results[index];
 
-            if (result) {
-              errors[validatorPromisesNames[index]] = result;
+              if (result) {
+                errors[validatorPromisesNames[index]] = result;
 
-              if (!error) {
-                error = result;
-              }
+                if (!error) {
+                  error = result;
+                }
 
-              if (stopValidationOnFirstError) {
-                break;
+                if (stopValidationOnFirstError) {
+                  break;
+                }
               }
             }
-          }
 
-          this.finishFieldValidation(field, error, errors, notifySubscribers);
-        })
-          .catch(validationError => {
-            this.log('VALIDATION REJECT', validationError);
-            this.finishFieldValidation(field, validationError.message, errors, notifySubscribers);
+            this.finishFieldValidation(field, error, errors, notifySubscribers);
           })
+          .catch((validationError) => {
+            this.log("VALIDATION REJECT", validationError);
+            this.finishFieldValidation(
+              field,
+              validationError.message,
+              errors,
+              notifySubscribers
+            );
+          });
       }
     } else {
       this.finishFieldValidation(field, undefined, {}, notifySubscribers);
@@ -587,25 +680,31 @@ export default class Formera {
    * @param callback Callback to be called when field state changes.
    * @param options Parts of the state to listen.
    */
-  public fieldSubscribe(field: string, callback: FieldSubscriptionCallback, options?: FieldSubscriptionOptions): number {
+  public fieldSubscribe(
+    field: string,
+    callback: FieldSubscriptionCallback,
+    options?: FieldSubscriptionOptions
+  ): number {
     const { fieldSubscriptions } = this.state;
     options = options || { ...defaultFieldSubscriptionOptions };
 
-    fieldSubscriptions[field].subscriptions[++fieldSubscriptions[field].index] = { callback, options };
+    fieldSubscriptions[field].subscriptions[
+      ++fieldSubscriptions[field].index
+    ] = { callback, options };
 
     return fieldSubscriptions[field].index;
   }
 
   /**
- * Do the field unsubscription.
- * @param field Field name.
- * @param subscriptionkey The subscriptionkey returned in subscribe.
- */
+   * Do the field unsubscription.
+   * @param field Field name.
+   * @param subscriptionkey The subscriptionkey returned in subscribe.
+   */
   public fieldUnsubscribe(field: string, subscriptionkey: number): void {
     const { fieldSubscriptions } = this.state;
 
     if (fieldSubscriptions[field]?.subscriptions?.[subscriptionkey]) {
-      delete fieldSubscriptions[field].subscriptions[subscriptionkey]
+      delete fieldSubscriptions[field].subscriptions[subscriptionkey];
     }
   }
 
@@ -614,12 +713,15 @@ export default class Formera {
    * @param callback Callback to be called when form state changes.
    * @param options Parts of the state to listen.
    */
-  public formSubscribe(callback: FormSubscriptionCallback, options: FormSubscriptionOptions = { ...defaultFormSubscriptionOptions }): void {
+  public formSubscribe(
+    callback: FormSubscriptionCallback,
+    options: FormSubscriptionOptions = { ...defaultFormSubscriptionOptions }
+  ): void {
     this.state.formSubscriptions.push({ callback, options });
   }
 
   /**
-   * Return the builded field state with current and initial value. 
+   * Return the builded field state with current and initial value.
    * @param field Field name.
    */
   public getFieldState(field: string): FieldState {
@@ -631,11 +733,11 @@ export default class Formera {
       return undefined;
     }
 
-    const value = get(formState.values, field) ?? '';
-    const initial = get(formState.initialValues, field) ?? '';
+    const value = get(formState.values, field) ?? "";
+    const initial = get(formState.initialValues, field) ?? "";
 
-    const previousValue = get(formState.previousState.values, field) ?? '';
-    const previousInitial = get(formState.previousState.values, field) ?? '';
+    const previousValue = get(formState.previousState.values, field) ?? "";
+    const previousInitial = get(formState.previousState.values, field) ?? "";
 
     const { submitting } = formState;
 
@@ -644,11 +746,11 @@ export default class Formera {
       previousState: {
         ...fieldState.previousState,
         value: previousValue,
-        initial: previousInitial
+        initial: previousInitial,
       },
       value,
       initial,
-      submitting
+      submitting,
     };
   }
 
@@ -668,7 +770,7 @@ export default class Formera {
   }
 
   /**
-   * Notify all field subscribers by field. 
+   * Notify all field subscribers by field.
    * @param field Field name.
    * @param changes State changes to be compared..
    */
@@ -685,7 +787,7 @@ export default class Formera {
       for (const subscriptionKey in subscriptions) {
         const { options, callback } = subscriptions[subscriptionKey];
 
-        if (changes.some(change => options[change])) {
+        if (changes.some((change) => options[change])) {
           callback(currentState);
         }
       }
@@ -693,7 +795,15 @@ export default class Formera {
   }
 
   /**
-   * Notify all form subscribers. 
+   * Return all registered fields;
+   */
+  getRegisteredFieldNames(): Array<string> {
+    const { fieldEntries } = this.state;
+    return Object.keys(fieldEntries);
+  }
+
+  /**
+   * Notify all form subscribers.
    * @param changes State changes to be compared.
    */
   private notifyFormSubscribers(changes?: string[]) {
@@ -703,10 +813,10 @@ export default class Formera {
 
     changes = changes || getStateChanges<FormState>(currentState);
 
-    this.log('FORM CHANGES: ', changes);
+    this.log("FORM CHANGES: ", changes);
 
     for (const { options, callback } of formSubscriptions) {
-      if (changes.some(change => options[change])) {
+      if (changes.some((change) => options[change])) {
         callback(currentState);
       }
     }
@@ -727,7 +837,8 @@ export default class Formera {
 
   /**Recalc form validation. */
   private recalcFormValidation() {
-    let valid = true, errors = {};
+    let valid = true,
+      errors = {};
     for (const field in this.state.fieldStates) {
       const fieldState = this.state.fieldStates[field];
 
@@ -737,31 +848,36 @@ export default class Formera {
       }
     }
 
-    const changes = setState<FormState>(this.state.formState, { valid, errors });
+    const changes = setState<FormState>(this.state.formState, {
+      valid,
+      errors,
+    });
 
     this.notifyFormSubscribers(changes);
   }
 
   /**
-   * Returns if a field has child fields. 
+   * Returns if a field has child fields.
    * @param field Field name.
    */
   private hasChild(field: string): boolean {
     const { fieldEntries } = this.state;
-    return Object.keys(fieldEntries).some(nested => isFieldChild(field, nested));
+    return Object.keys(fieldEntries).some((nested) =>
+      isFieldChild(field, nested)
+    );
   }
 
   /**
-   * Log messages. 
+   * Log messages.
    * @param logs Messages to log.
    */
   private log(...logs: any): void {
     const { options } = this.state;
-    if (options.debug) console.log('[FORMERA]', ...logs);
+    if (options.debug) console.log("[FORMERA]", ...logs);
   }
 
   /**
-   * Init the debug log with timer. 
+   * Init the debug log with timer.
    * @param action Current action.
    * @param field Field name.
    */
